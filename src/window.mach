@@ -1,0 +1,453 @@
+# glfw.window: window lifecycle, attributes, context, and window callbacks.
+#
+# a Window is a by-value wrapper around the opaque GLFWwindow handle.
+# fallible constructors return a nil-handle Window; check with is_valid
+# and query glfw.core.get_error for the cause.
+
+use glfw.c;
+use std.types.bool.bool;
+use std.types.string.str;
+
+# Window: handle to a GLFW window and its context.
+# ---
+# handle: opaque GLFWwindow pointer, nil when invalid
+pub rec Window {
+    handle: ptr;
+}
+
+# WindowPosFun: window position callback (window, xpos, ypos).
+pub def WindowPosFun: fun(ptr, i32, i32);
+# WindowSizeFun: window size callback (window, width, height).
+pub def WindowSizeFun: fun(ptr, i32, i32);
+# WindowCloseFun: window close-request callback (window).
+pub def WindowCloseFun: fun(ptr);
+# WindowRefreshFun: window damage/refresh callback (window).
+pub def WindowRefreshFun: fun(ptr);
+# WindowFocusFun: focus callback (window, focused).
+pub def WindowFocusFun: fun(ptr, i32);
+# WindowIconifyFun: iconify callback (window, iconified).
+pub def WindowIconifyFun: fun(ptr, i32);
+# WindowMaximizeFun: maximize callback (window, maximized).
+pub def WindowMaximizeFun: fun(ptr, i32);
+# FramebufferSizeFun: framebuffer size callback (window, width, height).
+pub def FramebufferSizeFun: fun(ptr, i32, i32);
+# WindowContentScaleFun: content scale callback (window, xscale, yscale).
+pub def WindowContentScaleFun: fun(ptr, f32, f32);
+
+# no_window: the nil Window, for optional window arguments.
+# ---
+# ret: a Window with a nil handle
+pub fun no_window() Window {
+    ret Window{ handle: nil };
+}
+
+# window_from_handle: rewrap a raw handle received in a callback.
+# ---
+# handle: opaque GLFWwindow pointer
+# ret:    the wrapped Window
+pub fun window_from_handle(handle: ptr) Window {
+    ret Window{ handle: handle };
+}
+
+# is_valid: whether a Window holds a live handle.
+# ---
+# window: window to test
+# ret:    true if the handle is non-nil
+pub fun is_valid(window: Window) bool {
+    ret window.handle != nil;
+}
+
+# default_window_hints: reset all window hints to their defaults.
+pub fun default_window_hints() {
+    c.glfwDefaultWindowHints();
+}
+
+# window_hint: set a window hint for the next create_window call.
+# see glfw.hint for ids and values.
+# ---
+# hint:  window hint id
+# value: hint value
+pub fun window_hint(hint: i32, value: i32) {
+    c.glfwWindowHint(hint, value);
+}
+
+# window_hint_string: set a string-valued window hint.
+# ---
+# hint:  window hint id
+# value: hint value, copied before return
+pub fun window_hint_string(hint: i32, value: str) {
+    c.glfwWindowHintString(hint, value);
+}
+
+# create_window: create a window and its context.
+#
+# pass a valid monitor handle for fullscreen, monitor_none() for windowed;
+# pass another window in share to share its context, no_window() otherwise.
+# ---
+# width:   desired width in screen coordinates
+# height:  desired height in screen coordinates
+# title:   initial UTF-8 title
+# monitor: monitor handle for fullscreen, nil for windowed
+# share:   window whose context to share, or no_window()
+# ret:     the new Window; nil handle on failure
+pub fun create_window(width: i32, height: i32, title: str, monitor: ptr, share: Window) Window {
+    ret Window{ handle: c.glfwCreateWindow(width, height, title, monitor, share.handle) };
+}
+
+# open_window: create_window sugar for the common windowed case.
+# ---
+# width:  desired width in screen coordinates
+# height: desired height in screen coordinates
+# title:  initial UTF-8 title
+# ret:    the new Window; nil handle on failure
+pub fun open_window(width: i32, height: i32, title: str) Window {
+    ret create_window(width, height, title, nil, no_window());
+}
+
+# destroy_window: destroy a window and its context.
+# ---
+# window: window to destroy
+pub fun destroy_window(window: Window) {
+    c.glfwDestroyWindow(window.handle);
+}
+
+# window_should_close: the close flag, set by the user or the program.
+# ---
+# window: window to query
+# ret:    true if the window should close
+pub fun window_should_close(window: Window) bool {
+    ret c.glfwWindowShouldClose(window.handle) != 0;
+}
+
+# set_window_should_close: set or clear the close flag.
+# ---
+# window: window to flag
+# value:  new close flag
+pub fun set_window_should_close(window: Window, value: bool) {
+    c.glfwSetWindowShouldClose(window.handle, value::i32);
+}
+
+# get_window_title: current UTF-8 window title.
+# ---
+# window: window to query
+# ret:    GLFW-owned string, valid until the title changes
+pub fun get_window_title(window: Window) str {
+    ret c.glfwGetWindowTitle(window.handle);
+}
+
+# set_window_title: set the UTF-8 window title.
+# ---
+# window: window to retitle
+# title:  new title
+pub fun set_window_title(window: Window, title: str) {
+    c.glfwSetWindowTitle(window.handle, title);
+}
+
+# set_window_icon: set the window icon from candidate images.
+# ---
+# window: window to decorate
+# count:  number of images
+# images: candidate icon images, closest sizes are picked
+pub fun set_window_icon(window: Window, count: i32, images: *c.Image) {
+    c.glfwSetWindowIcon(window.handle, count, images);
+}
+
+# get_window_pos: position of the client area in screen coordinates.
+# ---
+# window: window to query
+# xpos:   receives the x position
+# ypos:   receives the y position
+pub fun get_window_pos(window: Window, xpos: *i32, ypos: *i32) {
+    c.glfwGetWindowPos(window.handle, xpos, ypos);
+}
+
+# set_window_pos: move the client area to screen coordinates.
+# ---
+# window: window to move
+# xpos:   new x position
+# ypos:   new y position
+pub fun set_window_pos(window: Window, xpos: i32, ypos: i32) {
+    c.glfwSetWindowPos(window.handle, xpos, ypos);
+}
+
+# get_window_size: size of the client area in screen coordinates.
+# ---
+# window: window to query
+# width:  receives the width
+# height: receives the height
+pub fun get_window_size(window: Window, width: *i32, height: *i32) {
+    c.glfwGetWindowSize(window.handle, width, height);
+}
+
+# set_window_size_limits: constrain the client area size.
+# use hint.DONT_CARE to leave a bound open.
+# ---
+# window:    window to constrain
+# minwidth:  minimum width
+# minheight: minimum height
+# maxwidth:  maximum width
+# maxheight: maximum height
+pub fun set_window_size_limits(window: Window, minwidth: i32, minheight: i32, maxwidth: i32, maxheight: i32) {
+    c.glfwSetWindowSizeLimits(window.handle, minwidth, minheight, maxwidth, maxheight);
+}
+
+# set_window_aspect_ratio: lock the client area aspect ratio.
+# use hint.DONT_CARE for both to disable.
+# ---
+# window: window to constrain
+# numer:  ratio numerator
+# denom:  ratio denominator
+pub fun set_window_aspect_ratio(window: Window, numer: i32, denom: i32) {
+    c.glfwSetWindowAspectRatio(window.handle, numer, denom);
+}
+
+# set_window_size: resize the client area in screen coordinates.
+# ---
+# window: window to resize
+# width:  new width
+# height: new height
+pub fun set_window_size(window: Window, width: i32, height: i32) {
+    c.glfwSetWindowSize(window.handle, width, height);
+}
+
+# get_framebuffer_size: size of the framebuffer in pixels.
+# ---
+# window: window to query
+# width:  receives the width
+# height: receives the height
+pub fun get_framebuffer_size(window: Window, width: *i32, height: *i32) {
+    c.glfwGetFramebufferSize(window.handle, width, height);
+}
+
+# get_window_frame_size: size of each edge of the window frame.
+# ---
+# window: window to query
+# left:   receives the left edge size
+# top:    receives the top edge size
+# right:  receives the right edge size
+# bottom: receives the bottom edge size
+pub fun get_window_frame_size(window: Window, left: *i32, top: *i32, right: *i32, bottom: *i32) {
+    c.glfwGetWindowFrameSize(window.handle, left, top, right, bottom);
+}
+
+# get_window_content_scale: content scale of the window.
+# ---
+# window: window to query
+# xscale: receives the x scale
+# yscale: receives the y scale
+pub fun get_window_content_scale(window: Window, xscale: *f32, yscale: *f32) {
+    c.glfwGetWindowContentScale(window.handle, xscale, yscale);
+}
+
+# get_window_opacity: opacity of the whole window, 0 to 1.
+# ---
+# window: window to query
+# ret:    opacity
+pub fun get_window_opacity(window: Window) f32 {
+    ret c.glfwGetWindowOpacity(window.handle);
+}
+
+# set_window_opacity: set the opacity of the whole window.
+# ---
+# window:  window to change
+# opacity: new opacity, 0 to 1
+pub fun set_window_opacity(window: Window, opacity: f32) {
+    c.glfwSetWindowOpacity(window.handle, opacity);
+}
+
+# iconify_window: minimize the window.
+# ---
+# window: window to iconify
+pub fun iconify_window(window: Window) {
+    c.glfwIconifyWindow(window.handle);
+}
+
+# restore_window: restore an iconified or maximized window.
+# ---
+# window: window to restore
+pub fun restore_window(window: Window) {
+    c.glfwRestoreWindow(window.handle);
+}
+
+# maximize_window: maximize the window.
+# ---
+# window: window to maximize
+pub fun maximize_window(window: Window) {
+    c.glfwMaximizeWindow(window.handle);
+}
+
+# show_window: make a hidden window visible.
+# ---
+# window: window to show
+pub fun show_window(window: Window) {
+    c.glfwShowWindow(window.handle);
+}
+
+# hide_window: hide a visible window.
+# ---
+# window: window to hide
+pub fun hide_window(window: Window) {
+    c.glfwHideWindow(window.handle);
+}
+
+# focus_window: bring the window to front and set input focus.
+# ---
+# window: window to focus
+pub fun focus_window(window: Window) {
+    c.glfwFocusWindow(window.handle);
+}
+
+# request_window_attention: request user attention to the window.
+# ---
+# window: window to highlight
+pub fun request_window_attention(window: Window) {
+    c.glfwRequestWindowAttention(window.handle);
+}
+
+# get_window_monitor: monitor of a fullscreen window.
+# ---
+# window: window to query
+# ret:    opaque monitor handle, nil for windowed mode
+pub fun get_window_monitor(window: Window) ptr {
+    ret c.glfwGetWindowMonitor(window.handle);
+}
+
+# set_window_monitor: set fullscreen or windowed mode.
+# ---
+# window:       window to change
+# monitor:      monitor handle for fullscreen, nil for windowed
+# xpos:         windowed-mode x position
+# ypos:         windowed-mode y position
+# width:        new width
+# height:       new height
+# refresh_rate: fullscreen refresh rate, or hint.DONT_CARE
+pub fun set_window_monitor(window: Window, monitor: ptr, xpos: i32, ypos: i32, width: i32, height: i32, refresh_rate: i32) {
+    c.glfwSetWindowMonitor(window.handle, monitor, xpos, ypos, width, height, refresh_rate);
+}
+
+# get_window_attrib: read a window attribute. see glfw.hint for ids.
+# ---
+# window: window to query
+# attrib: attribute id
+# ret:    attribute value
+pub fun get_window_attrib(window: Window, attrib: i32) i32 {
+    ret c.glfwGetWindowAttrib(window.handle, attrib);
+}
+
+# set_window_attrib: set a mutable window attribute.
+# ---
+# window: window to change
+# attrib: attribute id
+# value:  new value
+pub fun set_window_attrib(window: Window, attrib: i32, value: i32) {
+    c.glfwSetWindowAttrib(window.handle, attrib, value);
+}
+
+# set_window_user_pointer: attach a user pointer to the window.
+# ---
+# window:  window to tag
+# pointer: arbitrary user data
+pub fun set_window_user_pointer(window: Window, pointer: ptr) {
+    c.glfwSetWindowUserPointer(window.handle, pointer);
+}
+
+# get_window_user_pointer: read the window's user pointer.
+# ---
+# window: window to query
+# ret:    the user pointer, nil if unset
+pub fun get_window_user_pointer(window: Window) ptr {
+    ret c.glfwGetWindowUserPointer(window.handle);
+}
+
+# make_context_current: bind the window's context to this thread.
+# ---
+# window: window whose context to bind, or no_window() to release
+pub fun make_context_current(window: Window) {
+    c.glfwMakeContextCurrent(window.handle);
+}
+
+# get_current_context: window whose context is current on this thread.
+# ---
+# ret: the current Window; nil handle if none
+pub fun get_current_context() Window {
+    ret Window{ handle: c.glfwGetCurrentContext() };
+}
+
+# swap_buffers: swap the window's front and back buffers.
+# ---
+# window: window to present
+pub fun swap_buffers(window: Window) {
+    c.glfwSwapBuffers(window.handle);
+}
+
+# set_window_pos_callback: install the position callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_pos_callback(window: Window, callback: WindowPosFun) {
+    c.glfwSetWindowPosCallback(window.handle, callback);
+}
+
+# set_window_size_callback: install the size callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_size_callback(window: Window, callback: WindowSizeFun) {
+    c.glfwSetWindowSizeCallback(window.handle, callback);
+}
+
+# set_window_close_callback: install the close-request callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_close_callback(window: Window, callback: WindowCloseFun) {
+    c.glfwSetWindowCloseCallback(window.handle, callback);
+}
+
+# set_window_refresh_callback: install the damage/refresh callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_refresh_callback(window: Window, callback: WindowRefreshFun) {
+    c.glfwSetWindowRefreshCallback(window.handle, callback);
+}
+
+# set_window_focus_callback: install the focus callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_focus_callback(window: Window, callback: WindowFocusFun) {
+    c.glfwSetWindowFocusCallback(window.handle, callback);
+}
+
+# set_window_iconify_callback: install the iconify callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_iconify_callback(window: Window, callback: WindowIconifyFun) {
+    c.glfwSetWindowIconifyCallback(window.handle, callback);
+}
+
+# set_window_maximize_callback: install the maximize callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_maximize_callback(window: Window, callback: WindowMaximizeFun) {
+    c.glfwSetWindowMaximizeCallback(window.handle, callback);
+}
+
+# set_framebuffer_size_callback: install the framebuffer size callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_framebuffer_size_callback(window: Window, callback: FramebufferSizeFun) {
+    c.glfwSetFramebufferSizeCallback(window.handle, callback);
+}
+
+# set_window_content_scale_callback: install the content scale callback.
+# ---
+# window:   window to observe
+# callback: handler, or nil to clear
+pub fun set_window_content_scale_callback(window: Window, callback: WindowContentScaleFun) {
+    c.glfwSetWindowContentScaleCallback(window.handle, callback);
+}

@@ -1,0 +1,168 @@
+# glfw.monitor: monitor enumeration, properties, video modes, and gamma.
+#
+# a Monitor is a by-value wrapper around the opaque GLFWmonitor handle.
+# handles stay valid until the monitor is disconnected or the library
+# terminates; watch set_monitor_callback for changes.
+
+use glfw.c;
+use std.types.string.str;
+use std.types.bool.bool;
+
+# Monitor: handle to a connected monitor.
+# ---
+# handle: opaque GLFWmonitor pointer, nil when invalid
+pub rec Monitor {
+    handle: ptr;
+}
+
+# MonitorFun: monitor configuration callback (monitor, core.CONNECTED or
+# core.DISCONNECTED).
+pub def MonitorFun: fun(ptr, i32);
+
+# no_monitor: the nil Monitor, for windowed-mode arguments.
+# ---
+# ret: a Monitor with a nil handle
+pub fun no_monitor() Monitor {
+    ret Monitor{ handle: nil };
+}
+
+# monitor_from_handle: rewrap a raw handle received in a callback.
+# ---
+# handle: opaque GLFWmonitor pointer
+# ret:    the wrapped Monitor
+pub fun monitor_from_handle(handle: ptr) Monitor {
+    ret Monitor{ handle: handle };
+}
+
+# monitor_is_valid: whether a Monitor holds a live handle.
+# ---
+# monitor: monitor to test
+# ret:     true if the handle is non-nil
+pub fun monitor_is_valid(monitor: Monitor) bool {
+    ret monitor.handle != nil;
+}
+
+# get_monitors: array of all connected monitors.
+# ---
+# count: receives the monitor count
+# ret:   GLFW-owned array of opaque handles, nil on error
+pub fun get_monitors(count: *i32) *ptr {
+    ret c.glfwGetMonitors(count);
+}
+
+# get_primary_monitor: the user's primary monitor.
+# ---
+# ret: the primary Monitor; nil handle if none
+pub fun get_primary_monitor() Monitor {
+    ret Monitor{ handle: c.glfwGetPrimaryMonitor() };
+}
+
+# get_monitor_pos: position of the monitor on the virtual desktop.
+# ---
+# monitor: monitor to query
+# xpos:    receives the x position
+# ypos:    receives the y position
+pub fun get_monitor_pos(monitor: Monitor, xpos: *i32, ypos: *i32) {
+    c.glfwGetMonitorPos(monitor.handle, xpos, ypos);
+}
+
+# get_monitor_workarea: work area of the monitor, excluding taskbars.
+# ---
+# monitor: monitor to query
+# xpos:    receives the x position
+# ypos:    receives the y position
+# width:   receives the width
+# height:  receives the height
+pub fun get_monitor_workarea(monitor: Monitor, xpos: *i32, ypos: *i32, width: *i32, height: *i32) {
+    c.glfwGetMonitorWorkarea(monitor.handle, xpos, ypos, width, height);
+}
+
+# get_monitor_physical_size: physical size of the display in millimetres.
+# ---
+# monitor:   monitor to query
+# width_mm:  receives the width
+# height_mm: receives the height
+pub fun get_monitor_physical_size(monitor: Monitor, width_mm: *i32, height_mm: *i32) {
+    c.glfwGetMonitorPhysicalSize(monitor.handle, width_mm, height_mm);
+}
+
+# get_monitor_content_scale: content scale of the monitor.
+# ---
+# monitor: monitor to query
+# xscale:  receives the x scale
+# yscale:  receives the y scale
+pub fun get_monitor_content_scale(monitor: Monitor, xscale: *f32, yscale: *f32) {
+    c.glfwGetMonitorContentScale(monitor.handle, xscale, yscale);
+}
+
+# get_monitor_name: human-readable monitor name.
+# ---
+# monitor: monitor to query
+# ret:     GLFW-owned string, valid until disconnect
+pub fun get_monitor_name(monitor: Monitor) str {
+    ret c.glfwGetMonitorName(monitor.handle);
+}
+
+# set_monitor_user_pointer: attach a user pointer to the monitor.
+# ---
+# monitor: monitor to tag
+# pointer: arbitrary user data
+pub fun set_monitor_user_pointer(monitor: Monitor, pointer: ptr) {
+    c.glfwSetMonitorUserPointer(monitor.handle, pointer);
+}
+
+# get_monitor_user_pointer: read the monitor's user pointer.
+# ---
+# monitor: monitor to query
+# ret:     the user pointer, nil if unset
+pub fun get_monitor_user_pointer(monitor: Monitor) ptr {
+    ret c.glfwGetMonitorUserPointer(monitor.handle);
+}
+
+# set_monitor_callback: install the monitor configuration callback.
+# ---
+# callback: handler, or nil to clear
+pub fun set_monitor_callback(callback: MonitorFun) {
+    c.glfwSetMonitorCallback(callback);
+}
+
+# get_video_modes: all video modes supported by the monitor.
+# ---
+# monitor: monitor to query
+# count:   receives the mode count
+# ret:     GLFW-owned array of video modes, nil on error
+pub fun get_video_modes(monitor: Monitor, count: *i32) *c.Vidmode {
+    ret c.glfwGetVideoModes(monitor.handle, count);
+}
+
+# get_video_mode: current video mode of the monitor.
+# ---
+# monitor: monitor to query
+# ret:     GLFW-owned video mode, nil on error
+pub fun get_video_mode(monitor: Monitor) *c.Vidmode {
+    ret c.glfwGetVideoMode(monitor.handle);
+}
+
+# set_gamma: generate and set a gamma ramp from an exponent.
+# ---
+# monitor: monitor to change
+# gamma:   desired exponent, greater than zero
+pub fun set_gamma(monitor: Monitor, gamma: f32) {
+    c.glfwSetGamma(monitor.handle, gamma);
+}
+
+# get_gamma_ramp: current gamma ramp of the monitor.
+# ---
+# monitor: monitor to query
+# ret:     GLFW-owned ramp, nil on error
+pub fun get_gamma_ramp(monitor: Monitor) *c.Gammaramp {
+    ret c.glfwGetGammaRamp(monitor.handle);
+}
+
+# set_gamma_ramp: set the gamma ramp of the monitor.
+# ---
+# monitor: monitor to change
+# ramp:    ramp to apply, copied before return
+pub fun set_gamma_ramp(monitor: Monitor, ramp: *c.Gammaramp) {
+    c.glfwSetGammaRamp(monitor.handle, ramp);
+}
