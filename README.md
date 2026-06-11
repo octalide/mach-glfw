@@ -5,17 +5,17 @@ plus an idiomatic Mach API on top. Project id is `glfw`, so consumers reach
 everything as `glfw.*`.
 
 ```mach
-use glfw.core;
-use glfw.window;
+use glfw: glfw.lib;
 
 fun example() {
-    core.init();
-    val w: window.Window = window.create(1280, 720, "hello", nil);
-    for (!window.should_close(w)) {
-        window.swap_buffers(w);
-        core.poll_events();
+    glfw.init();
+    val w: glfw.Window = glfw.open_window(1280, 720, "hello");
+    glfw.make_context_current(w);
+    for (!glfw.window_should_close(w)) {
+        glfw.swap_buffers(w);
+        glfw.poll_events();
     }
-    core.terminate();
+    glfw.terminate();
 }
 ```
 
@@ -98,10 +98,13 @@ says "GLFW").
 
 ### Idiomatic layer
 
-Naming: drop the `glfw` prefix and the per-domain noun, which the module path
-already carries. `glfwCreateWindow` → `window.create`, `glfwGetKey` →
-`input.key`, `glfwSetWindowShouldClose` → `window.set_should_close`,
-`GLFW_KEY_ESCAPE` → `key.ESCAPE`.
+Naming is mechanically derived from the C API, so any GLFW reference maps
+directly and a generator could reproduce the surface: functions are the C
+name minus the `glfw` prefix, snake_cased (`glfwCreateWindow` →
+`create_window`, `glfwWindowShouldClose` → `window_should_close`); constants
+are the C macro minus only `GLFW_` (`GLFW_KEY_ESCAPE` → `KEY_ESCAPE`). Every
+name is globally unique, which lets `lib.mach` flatten all of them onto one
+namespace.
 
 Types:
 
@@ -148,11 +151,24 @@ Callback model:
 
 ### Library surface — `glfw.lib`
 
-`lib.mach` forwards the everyday core so small programs need one import:
-`init`, `terminate`, `poll_events`, `wait_events`, `swap_interval`,
-`Window`, `window.create` (as `create_window`), `swap_buffers`,
-`make_context_current`, `should_close`, `set_should_close`. Domain modules
-remain the full API; the surface is sugar, not a boundary.
+`lib.mach` re-exports every public symbol of every split module (Mach has no
+import splat, so the surface is explicit `fwd` lines, generated from the
+splits). `use glfw: glfw.lib;` gives the whole API as `glfw.init()`,
+`glfw.create_window(...)`, `glfw.KEY_ESCAPE`. The split modules (`glfw.core`,
+`glfw.window`, …) remain importable individually for smaller dependency
+surfaces.
+
+### Requirements and vendoring
+
+The bindings call the **system** GLFW: `libs = ["glfw"]` resolves to
+`libglfw.so` and binds the `ext fun` symbols dynamically at load time.
+GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
+…). GLFW itself is intentionally not vendored: building it needs a C
+toolchain Mach doesn't drive, and a prebuilt static archive would drag in
+the platform backends' own link dependencies (wayland-client, xkbcommon,
+X11, …) for every consumer. If a fully pinned build is ever needed, a
+committed `libglfw.so` plus `libs = ["dep/glfw/libglfw.so"]` works today;
+rpath handling for non-system locations is the missing piece.
 
 ## Scope of GLFW coverage
 
