@@ -1,0 +1,41 @@
+use std.runtime;
+use print: std.print;
+
+ext fun glfwInit() i32;
+ext fun glfwTerminate();
+ext fun glfwGetVersion(major: *i32, minor: *i32, rev: *i32);
+ext fun glfwSetErrorCallback(callback: fun(i32, *u8)) ptr;
+ext fun glfwCreateWindow(width: i32, height: i32, title: *u8, monitor: ptr, share: ptr) ptr;
+
+var got_error: i64 = 0;
+
+fun on_error(code: i32, desc: *u8) {
+    got_error = 1;
+    print.printf("error callback fired: code=0x%x desc=%s\n", code::u64, desc);
+}
+
+$main.symbol = "main";
+fun main(argc: i64, argv: **u8) i64 {
+    glfwSetErrorCallback(on_error);
+
+    val w: ptr = glfwCreateWindow(1, 1, "probe", nil, nil);
+    if (got_error == 0) {
+        print.println("FAIL: error callback did not fire");
+        ret 1;
+    }
+
+    if (glfwInit() == 0) {
+        print.println("FAIL: glfwInit");
+        ret 1;
+    }
+
+    var major: i32 = 0;
+    var minor: i32 = 0;
+    var rev: i32 = 0;
+    glfwGetVersion(?major, ?minor, ?rev);
+    print.printf("GLFW %d.%d.%d\n", major::i64, minor::i64, rev::i64);
+
+    glfwTerminate();
+    print.println("probe OK");
+    ret 0;
+}

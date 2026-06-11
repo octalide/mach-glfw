@@ -1,0 +1,28 @@
+[project]
+id = "glfw"
+target = "native"
+dir_src = "src"
+dir_dep = "dep"
+
+[targets.linux]
+os = "linux"
+isa = "x86_64"
+entrypoint = "main.mach"
+binary = "linux/bin/glfw"
+libs = ["glfw"]
+
+[targets.windows]
+os = "windows"
+isa = "x86_64"
+entrypoint = "main.mach"
+binary = "windows/bin/glfw.exe"
+
+[targets.darwin]
+os = "darwin"
+isa = "x86_64"
+entrypoint = "main.mach"
+binary = "darwin/bin/glfw"
+
+[deps.mach-std]
+url = "https://github.com/octalide/mach-std"
+ref = "branch/main"
