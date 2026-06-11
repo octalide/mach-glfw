@@ -16,12 +16,16 @@ os = "windows"
 isa = "x86_64"
 entrypoint = "main.mach"
 binary = "windows/bin/glfw.exe"
+# declared intent: PE dynamic imports are not yet implemented in mach
+libs = ["glfw3"]
 
 [targets.darwin]
 os = "darwin"
 isa = "x86_64"
 entrypoint = "main.mach"
 binary = "darwin/bin/glfw"
+# declared intent: Mach-O dynamic imports are not yet implemented in mach
+libs = ["glfw"]
 
 [deps.mach-std]
 url = "https://github.com/octalide/mach-std"
