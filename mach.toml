@@ -16,8 +16,8 @@ os = "windows"
 isa = "x86_64"
 entrypoint = "main.mach"
 binary = "windows/bin/glfw.exe"
-# declared intent: PE dynamic imports are not yet implemented in mach
-libs = ["glfw3"]
+# declared intent: the windows toolchain is not yet validated end-to-end
+libs = ["glfw3.dll"]
 
 [targets.darwin]
 os = "darwin"

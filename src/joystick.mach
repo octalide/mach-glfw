@@ -17,7 +17,7 @@ pub val JOYSTICK_13: i32 = 12;
 pub val JOYSTICK_14: i32 = 13;
 pub val JOYSTICK_15: i32 = 14;
 pub val JOYSTICK_16: i32 = 15;
-pub val JOYSTICK_LAST: i32 = 15;
+pub val JOYSTICK_LAST: i32 = JOYSTICK_16;
 
 # hat states
 pub val HAT_CENTERED: i32 = 0;
@@ -25,10 +25,10 @@ pub val HAT_UP: i32 = 1;
 pub val HAT_RIGHT: i32 = 2;
 pub val HAT_DOWN: i32 = 4;
 pub val HAT_LEFT: i32 = 8;
-pub val HAT_RIGHT_UP: i32 = 3;
-pub val HAT_RIGHT_DOWN: i32 = 6;
-pub val HAT_LEFT_UP: i32 = 9;
-pub val HAT_LEFT_DOWN: i32 = 12;
+pub val HAT_RIGHT_UP: i32 = HAT_RIGHT | HAT_UP;
+pub val HAT_RIGHT_DOWN: i32 = HAT_RIGHT | HAT_DOWN;
+pub val HAT_LEFT_UP: i32 = HAT_LEFT | HAT_UP;
+pub val HAT_LEFT_DOWN: i32 = HAT_LEFT | HAT_DOWN;
 
 # gamepad buttons
 pub val GAMEPAD_BUTTON_A: i32 = 0;
@@ -46,11 +46,11 @@ pub val GAMEPAD_BUTTON_DPAD_UP: i32 = 11;
 pub val GAMEPAD_BUTTON_DPAD_RIGHT: i32 = 12;
 pub val GAMEPAD_BUTTON_DPAD_DOWN: i32 = 13;
 pub val GAMEPAD_BUTTON_DPAD_LEFT: i32 = 14;
-pub val GAMEPAD_BUTTON_LAST: i32 = 14;
-pub val GAMEPAD_BUTTON_CROSS: i32 = 0;
-pub val GAMEPAD_BUTTON_CIRCLE: i32 = 1;
-pub val GAMEPAD_BUTTON_SQUARE: i32 = 2;
-pub val GAMEPAD_BUTTON_TRIANGLE: i32 = 3;
+pub val GAMEPAD_BUTTON_LAST: i32 = GAMEPAD_BUTTON_DPAD_LEFT;
+pub val GAMEPAD_BUTTON_CROSS: i32 = GAMEPAD_BUTTON_A;
+pub val GAMEPAD_BUTTON_CIRCLE: i32 = GAMEPAD_BUTTON_B;
+pub val GAMEPAD_BUTTON_SQUARE: i32 = GAMEPAD_BUTTON_X;
+pub val GAMEPAD_BUTTON_TRIANGLE: i32 = GAMEPAD_BUTTON_Y;
 
 # gamepad axes
 pub val GAMEPAD_AXIS_LEFT_X: i32 = 0;
@@ -59,4 +59,4 @@ pub val GAMEPAD_AXIS_RIGHT_X: i32 = 2;
 pub val GAMEPAD_AXIS_RIGHT_Y: i32 = 3;
 pub val GAMEPAD_AXIS_LEFT_TRIGGER: i32 = 4;
 pub val GAMEPAD_AXIS_RIGHT_TRIGGER: i32 = 5;
-pub val GAMEPAD_AXIS_LAST: i32 = 5;
+pub val GAMEPAD_AXIS_LAST: i32 = GAMEPAD_AXIS_RIGHT_TRIGGER;

@@ -29,6 +29,21 @@ pub rec Cursor {
     handle: ptr;
 }
 
+# no_cursor: the nil Cursor, for restoring the default cursor.
+# ---
+# ret: a Cursor with a nil handle
+pub fun no_cursor() Cursor {
+    ret Cursor{ handle: nil };
+}
+
+# cursor_is_valid: whether a Cursor holds a live handle.
+# ---
+# cursor: cursor to test
+# ret:    true if the handle is non-nil
+pub fun cursor_is_valid(cursor: Cursor) bool {
+    ret cursor.handle != nil;
+}
+
 # KeyFun: key callback (window, key, scancode, action, mods).
 pub def KeyFun: fun(ptr, i32, i32, i32, i32);
 # CharFun: text input callback (window, codepoint).
@@ -156,7 +171,7 @@ pub fun destroy_cursor(cursor: Cursor) {
 # set_cursor: set the cursor image shown over the window's client area.
 # ---
 # window: window to change
-# cursor: cursor to show, or a nil-handle Cursor for the default
+# cursor: cursor to show, or no_cursor() for the default
 pub fun set_cursor(window: Window, cursor: Cursor) {
     c.glfwSetCursor(window.handle, cursor.handle);
 }
@@ -164,7 +179,7 @@ pub fun set_cursor(window: Window, cursor: Cursor) {
 # set_key_callback: install the key callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_key_callback(window: Window, callback: KeyFun) {
     c.glfwSetKeyCallback(window.handle, callback);
 }
@@ -172,7 +187,7 @@ pub fun set_key_callback(window: Window, callback: KeyFun) {
 # set_char_callback: install the text input callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_char_callback(window: Window, callback: CharFun) {
     c.glfwSetCharCallback(window.handle, callback);
 }
@@ -180,7 +195,7 @@ pub fun set_char_callback(window: Window, callback: CharFun) {
 # set_char_mods_callback: install the text-with-modifiers callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_char_mods_callback(window: Window, callback: CharModsFun) {
     c.glfwSetCharModsCallback(window.handle, callback);
 }
@@ -188,7 +203,7 @@ pub fun set_char_mods_callback(window: Window, callback: CharModsFun) {
 # set_mouse_button_callback: install the mouse button callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_mouse_button_callback(window: Window, callback: MouseButtonFun) {
     c.glfwSetMouseButtonCallback(window.handle, callback);
 }
@@ -196,7 +211,7 @@ pub fun set_mouse_button_callback(window: Window, callback: MouseButtonFun) {
 # set_cursor_pos_callback: install the cursor position callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_cursor_pos_callback(window: Window, callback: CursorPosFun) {
     c.glfwSetCursorPosCallback(window.handle, callback);
 }
@@ -204,7 +219,7 @@ pub fun set_cursor_pos_callback(window: Window, callback: CursorPosFun) {
 # set_cursor_enter_callback: install the cursor enter/leave callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_cursor_enter_callback(window: Window, callback: CursorEnterFun) {
     c.glfwSetCursorEnterCallback(window.handle, callback);
 }
@@ -212,7 +227,7 @@ pub fun set_cursor_enter_callback(window: Window, callback: CursorEnterFun) {
 # set_scroll_callback: install the scroll callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_scroll_callback(window: Window, callback: ScrollFun) {
     c.glfwSetScrollCallback(window.handle, callback);
 }
@@ -220,7 +235,7 @@ pub fun set_scroll_callback(window: Window, callback: ScrollFun) {
 # set_drop_callback: install the path drop callback.
 # ---
 # window:   window to observe
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_drop_callback(window: Window, callback: DropFun) {
     c.glfwSetDropCallback(window.handle, callback);
 }
@@ -318,7 +333,7 @@ pub fun joystick_is_gamepad(jid: i32) bool {
 
 # set_joystick_callback: install the joystick configuration callback.
 # ---
-# callback: handler, or nil to clear
+# callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_joystick_callback(callback: JoystickFun) {
     c.glfwSetJoystickCallback(callback);
 }

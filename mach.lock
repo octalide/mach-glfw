@@ -4,4 +4,4 @@ version = 1
 [deps.mach-std]
 url = "https://github.com/octalide/mach-std"
 ref = "branch/main"
-commit = "31142cb573c9e1268f191cab20a6dc72b99782da"
+commit = "2f05f24eb116bfdd087c2bb2060a4d32f2311f5f"

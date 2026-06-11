@@ -121,7 +121,7 @@ pub fun get_monitor_user_pointer(monitor: Monitor) ptr {
 
 # set_monitor_callback: install the monitor configuration callback.
 # ---
-# callback: handler, or nil to clear
+# callback: handler, or nil::MonitorFun to clear
 pub fun set_monitor_callback(callback: MonitorFun) {
     c.glfwSetMonitorCallback(callback);
 }

@@ -5,6 +5,7 @@
 # the window is closed or ESC is pressed.
 
 use std.runtime;
+use std.types.bool.true;
 use print: std.print;
 use glfw: glfw.lib;
 
@@ -22,7 +23,7 @@ fun on_error(code: i32, desc: *u8) {
 fun on_key(handle: ptr, key: i32, scancode: i32, action: i32, mods: i32) {
     if (action == glfw.PRESS && key == glfw.KEY_ESCAPE) {
         val w: glfw.Window = glfw.window_from_handle(handle);
-        glfw.set_window_should_close(w, glfw.TRUE::u8);
+        glfw.set_window_should_close(w, true);
     }
 }
 
@@ -42,7 +43,7 @@ fun main(argc: i64, argv: **u8) i64 {
     print.printf("GLFW %d.%d.%d\n", major::i64, minor::i64, rev::i64);
 
     val w: glfw.Window = glfw.open_window(800, 600, "mach-glfw");
-    if (!glfw.is_valid(w)) {
+    if (!glfw.window_is_valid(w)) {
         print.eprintln("failed to create window");
         glfw.terminate();
         ret 1;

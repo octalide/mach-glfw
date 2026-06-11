@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+env:
+  MACH_VERSION: v1.3.0
+  GLFW_VERSION: "3.4"
+
 jobs:
   full-build:
     name: Full Build
@@ -18,14 +22,35 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download -R octalide/mach -p mach -D /usr/local/bin
+          gh release download "$MACH_VERSION" -R octalide/mach -p mach -D /usr/local/bin
           chmod +x /usr/local/bin/mach
 
-      - name: Install GLFW
-        run: sudo apt-get update && sudo apt-get install -y libglfw3-dev
+      - name: Cache GLFW
+        id: cache-glfw
+        uses: actions/cache@v4
+        with:
+          path: ~/glfw-install
+          key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
 
-      - name: Fetch dependencies
-        run: mach dep pull
+      - name: Build GLFW
+        if: steps.cache-glfw.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          # ubuntu's libglfw3-dev is 3.3; the bindings target 3.4
+          sudo apt-get update
+          sudo apt-get install -y cmake xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
+          curl -sL "https://github.com/glfw/glfw/archive/refs/tags/$GLFW_VERSION.tar.gz" | tar xz
+          cmake -S "glfw-$GLFW_VERSION" -B glfw-build -DBUILD_SHARED_LIBS=ON \
+            -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF \
+            -DCMAKE_INSTALL_PREFIX="$HOME/glfw-install"
+          cmake --build glfw-build --parallel
+          cmake --install glfw-build
+
+      - name: Install GLFW
+        run: sudo cp -P ~/glfw-install/lib/libglfw.so* /usr/local/lib/ && sudo ldconfig
+
+      - name: Sync dependencies
+        run: mach dep sync
 
       - name: Build
         run: |
@@ -43,14 +68,39 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download -R octalide/mach -p mach -D /usr/local/bin
+          gh release download "$MACH_VERSION" -R octalide/mach -p mach -D /usr/local/bin
           chmod +x /usr/local/bin/mach
 
-      - name: Install GLFW
-        run: sudo apt-get update && sudo apt-get install -y libglfw3-dev
+      - name: Cache GLFW
+        id: cache-glfw
+        uses: actions/cache@v4
+        with:
+          path: ~/glfw-install
+          key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
 
-      - name: Fetch dependencies
-        run: mach dep pull
+      - name: Build GLFW
+        if: steps.cache-glfw.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y cmake xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
+          curl -sL "https://github.com/glfw/glfw/archive/refs/tags/$GLFW_VERSION.tar.gz" | tar xz
+          cmake -S "glfw-$GLFW_VERSION" -B glfw-build -DBUILD_SHARED_LIBS=ON \
+            -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF \
+            -DCMAKE_INSTALL_PREFIX="$HOME/glfw-install"
+          cmake --build glfw-build --parallel
+          cmake --install glfw-build
+
+      - name: Install GLFW
+        run: sudo cp -P ~/glfw-install/lib/libglfw.so* /usr/local/lib/ && sudo ldconfig
+
+      - name: Surface parity
+        run: tools/surface.sh check
+
+      - name: Sync dependencies
+        run: mach dep sync
 
       - name: Test
-        run: mach test .
+        run: |
+          set -euo pipefail
+          mach test .

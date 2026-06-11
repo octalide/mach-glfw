@@ -5,6 +5,7 @@
 # glfw.c with mach-idiomatic types.
 
 use glfw.c;
+use glfw.err;
 use std.types.bool.bool;
 use std.types.string.str;
 
@@ -81,7 +82,7 @@ pub fun get_error(description: **u8) i32 {
 #
 # callable before init. the previous callback is dropped.
 # ---
-# callback: error handler, or nil to clear
+# callback: error handler, or nil::ErrorFun to clear
 pub fun set_error_callback(callback: ErrorFun) {
     c.glfwSetErrorCallback(callback);
 }
@@ -160,12 +161,24 @@ pub fun get_proc_address(procname: str) ptr {
     ret c.glfwGetProcAddress(procname);
 }
 
-test "core: error before init is NOT_INITIALIZED" {
+var test_cb_code: i64 = 0;
+
+fun test_error_cb(code: i32, desc: *u8) {
+    test_cb_code = code::i64;
+}
+
+# display-free: relies on GLFW being uninitialized, so it must not run
+# after any test that calls init().
+test "core: error callback fires with NOT_INITIALIZED before init" {
     var desc: *u8 = nil;
+    test_cb_code = 0;
+    set_error_callback(test_error_cb);
     c.glfwGetError(nil);
-    val w: ptr = c.glfwCreateWindow(1, 1, "t", nil, nil);
+    c.glfwCreateWindow(1, 1, "t", nil, nil);
+    set_error_callback(nil::ErrorFun);
+    if (test_cb_code != err.NOT_INITIALIZED::i64) { ret 1; }
     val code: i32 = get_error(?desc);
-    if (code != 0x00010001) { ret 1; }
+    if (code != err.NOT_INITIALIZED) { ret 1; }
     if (desc == nil) { ret 1; }
     ret 0;
 }
