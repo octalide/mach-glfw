@@ -1,8 +1,34 @@
-# mach-glfw — GLFW 3.4 bindings for Mach
+# mach-glfw
 
 Mach bindings for [GLFW](https://www.glfw.org/) 3.4: a thin raw C-ABI layer
 plus an idiomatic Mach API on top. Project id is `glfw`, so consumers reach
 everything as `glfw.*`.
+
+```mach
+use glfw.core;
+use glfw.window;
+
+fun example() {
+    core.init();
+    val w: window.Window = window.create(1280, 720, "hello", nil);
+    for (!window.should_close(w)) {
+        window.swap_buffers(w);
+        core.poll_events();
+    }
+    core.terminate();
+}
+```
+
+Consuming projects vendor the bindings as a normal Mach dependency and add the
+system library to their link inputs:
+
+```toml
+[deps.mach-glfw]
+url = "https://github.com/octalide/mach-glfw"
+
+[targets.linux]
+libs = ["glfw"]   # bind against the system libglfw.so
+```
 
 ## Goals
 
@@ -127,19 +153,6 @@ Callback model:
 `Window`, `window.create` (as `create_window`), `swap_buffers`,
 `make_context_current`, `should_close`, `set_should_close`. Domain modules
 remain the full API; the surface is sugar, not a boundary.
-
-## Linking
-
-The library is source-vendored like all Mach deps; the **consumer's** manifest
-must add the system library to its target:
-
-```toml
-[targets.linux]
-libs = ["glfw"]
-```
-
-`ext fun` symbols then bind dynamically against `libglfw.so` at load time.
-This repo's own manifest does the same for its demo/tests.
 
 ## Scope of GLFW coverage
 
