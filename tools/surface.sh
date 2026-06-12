@@ -26,7 +26,7 @@ EOF
     for m in $MODULES; do
         grep -oE '^pub (val|fun|rec|def) [A-Za-z_][A-Za-z0-9_]*' "src/$m.mach" |
             awk -v m="$m" '{print m"."$3}'
-    done | sort | awk '{print "fwd "$1";"}'
+    done | LC_ALL=C sort | awk '{print "fwd "$1";"}'
 }
 
 case "${1:-}" in
