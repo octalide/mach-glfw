@@ -12,7 +12,6 @@ obj     = "out/{target}/obj"
 isa  = "x86_64"
 os   = "linux"
 abi  = "sysv64"
-libs = ["glfw"]
 
 [target.windows]
 isa  = "x86_64"
@@ -20,12 +19,19 @@ os   = "windows"
 abi  = "win64"
 ext  = ".exe"
 # declared intent: the windows toolchain is not yet validated end-to-end
-libs = ["glfw3.dll"]
 
 [target.darwin]
 isa  = "x86_64"
 os   = "darwin"
 abi  = "sysv64"
+
+[os.linux]
+libs = ["glfw"]
+
+[os.windows]
+libs = ["glfw3.dll"]
+
+[os.darwin]
 # declared intent: Mach-O dynamic imports are not yet implemented in mach
 libs = ["glfw"]
 
