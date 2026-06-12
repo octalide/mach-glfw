@@ -1,8 +1,34 @@
-# mach-glfw — GLFW 3.4 bindings for Mach
+# mach-glfw
 
 Mach bindings for [GLFW](https://www.glfw.org/) 3.4: a thin raw C-ABI layer
 plus an idiomatic Mach API on top. Project id is `glfw`, so consumers reach
 everything as `glfw.*`.
+
+```mach
+use glfw: glfw.lib;
+
+fun example() {
+    glfw.init();
+    val w: glfw.Window = glfw.open_window(1280, 720, "hello");
+    glfw.make_context_current(w);
+    for (!glfw.window_should_close(w)) {
+        glfw.swap_buffers(w);
+        glfw.poll_events();
+    }
+    glfw.terminate();
+}
+```
+
+Consuming projects vendor the bindings as a normal Mach dependency and add the
+system library to their link inputs:
+
+```toml
+[deps.mach-glfw]
+url = "https://github.com/octalide/mach-glfw"
+
+[targets.linux]
+libs = ["glfw"]   # bind against the system libglfw.so
+```
 
 ## Goals
 
@@ -17,8 +43,9 @@ everything as `glfw.*`.
 - Vulkan surface creation (`glfwGetRequiredInstanceExtensions`,
   `glfwCreateWindowSurface`, …) — deferred until Mach has a Vulkan story.
 - Native-handle access (`glfw3native.h`) — platform-specific, deferred.
-- An OpenGL loader. `core.proc_address` exposes `glfwGetProcAddress`; GL
+- An OpenGL loader. `get_proc_address` exposes `glfwGetProcAddress`; GL
   bindings belong in a separate project.
+- `glfwInitAllocator` — Mach-side custom allocators for GLFW are deferred.
 
 ## Architecture
 
@@ -27,16 +54,16 @@ Two layers:
 ```
 src/
   c.mach          raw layer: every ext fun import, C types verbatim
-  lib.mach        library surface: forwards the common core
-  core.mach       init/terminate, version, events, time, context, error cb
-  err.mach        error codes + last-error query
+  lib.mach        library surface: generated, forwards every public symbol
+  core.mach       init/terminate, version, events, time, context, error query
+  err.mach        error code constants
   hint.mach       init & window hint ids and values
-  window.mach     Window + lifecycle, attributes, per-window callbacks
-  monitor.mach    Monitor, VideoMode, gamma
-  input.mach      per-window input: keys, mouse, cursor mode, clipboard, drop
-  key.mach        key codes, actions, modifier bits
-  mouse.mach      mouse buttons, cursor shapes, Cursor objects
-  joystick.mach   joystick + gamepad state and constants
+  window.mach     Window + lifecycle, attributes, context, window callbacks
+  monitor.mach    Monitor, video modes, gamma
+  input.mach      keys, mouse, Cursor objects, clipboard, joystick, gamepad
+  key.mach        key code, action, and modifier constants
+  mouse.mach      mouse button and cursor shape constants
+  joystick.mach   joystick, hat, and gamepad constants
   main.mach       demo executable (not part of the library surface)
 ```
 
@@ -72,29 +99,39 @@ says "GLFW").
 
 ### Idiomatic layer
 
-Naming: drop the `glfw` prefix and the per-domain noun, which the module path
-already carries. `glfwCreateWindow` → `window.create`, `glfwGetKey` →
-`input.key`, `glfwSetWindowShouldClose` → `window.set_should_close`,
-`GLFW_KEY_ESCAPE` → `key.ESCAPE`.
+Naming is mechanically derived from the C API, so any GLFW reference maps
+directly and a generator could reproduce the surface: functions are the C
+name minus the `glfw` prefix, snake_cased (`glfwCreateWindow` →
+`create_window`, `glfwWindowShouldClose` → `window_should_close`); constants
+are the C macro minus only `GLFW_` (`GLFW_KEY_ESCAPE` → `KEY_ESCAPE`). Every
+name is globally unique, which lets `lib.mach` flatten all of them onto one
+namespace.
+
+A small set of convenience helpers has no C counterpart and follows its own
+uniform rule per handle type: `no_window()` / `no_monitor()` / `no_cursor()`
+(nil-handle values for optional arguments), `window_from_handle()` /
+`monitor_from_handle()` (rewrap raw callback pointers), `window_is_valid()` /
+`monitor_is_valid()` / `cursor_is_valid()`, and `open_window()` (windowed
+`create_window` sugar).
 
 Types:
 
 - Opaque handles wrap in single-field records: `pub rec Window { handle: ptr; }`,
   `Monitor`, `Cursor`. Passed **by value** (one pointer wide). A nil-handle
-  record is the sentinel for failure; check with `window.is_valid(w)`.
+  record is the sentinel for failure; check with `window_is_valid(w)`.
 - `bool` (`std.types.bool`) replaces `GLFW_TRUE`/`GLFW_FALSE` returns and
   parameters; `str` (`std.types.string`) replaces `const char*`. Strings
   returned by GLFW are GLFW-owned; the docs state their lifetime.
-- Scalar out-params stay out-params (`window.size(w, ?width, ?height)`), the
-  Mach idiom for multiple returns.
+- Scalar out-params stay out-params (`get_window_size(w, ?width, ?height)`),
+  the Mach idiom for multiple returns.
 
 Error model — GLFW's own, not `Result`:
 
 - Fallible constructors return a sentinel (nil-handle record); everything else
   follows GLFW semantics (calls with an invalid handle fire the error
   callback / set the last error).
-- `err.last(desc: *str) i32` wraps `glfwGetError`; `err.NONE`,
-  `err.NOT_INITIALIZED`, … name the codes.
+- `get_error(description: **u8) i32` wraps `glfwGetError`; `NO_ERROR`,
+  `NOT_INITIALIZED`, … (module `glfw.err`) name the codes.
 - Rationale: Mach's `Result[T, E]` requires explicit generic instantiation at
   every unwrap (`unwrap_ok[Window, Error](r)`), which costs more ergonomics
   than the sentinel + last-error model it would replace. GLFW already
@@ -103,7 +140,9 @@ Error model — GLFW's own, not `Result`:
 Callback model:
 
 - Callbacks are plain Mach functions; Mach compiles to the SysV C ABI on the
-  supported target, so a `fun` passes directly to GLFW (verified).
+  supported target, so a `fun` passes directly to GLFW. A display-free test
+  in `core.mach` pins this ABI guarantee in CI (GLFW invokes a Mach error
+  callback).
 - Callback `def` types live in the module that owns the setter and use **raw
   C-faithful signatures** — first parameter `ptr` (the `GLFWwindow*`), not
   `Window`, because GLFW is the caller and the C ABI is the contract:
@@ -113,33 +152,35 @@ Callback model:
   pub fun set_key_callback(w: Window, cb: KeyFun) { c.glfwSetKeyCallback(w.handle, cb); }
   ```
 
-  Inside a callback, rewrap with `window.from_handle(h)`. Setters return
+  Inside a callback, rewrap with `window_from_handle(h)`. Setters return
   nothing (the previous-callback return is dropped; v1 keeps the surface
-  small).
+  small); clear one by passing nil cast to the callback type
+  (`nil::KeyFun`).
 - There is no closure capture in Mach; callback state goes in module-level
-  `var`s or through `window.set_user_ptr` / `window.user_ptr`
+  `var`s or through `set_window_user_pointer` / `get_window_user_pointer`
   (`glfwSetWindowUserPointer`).
 
 ### Library surface — `glfw.lib`
 
-`lib.mach` forwards the everyday core so small programs need one import:
-`init`, `terminate`, `poll_events`, `wait_events`, `swap_interval`,
-`Window`, `window.create` (as `create_window`), `swap_buffers`,
-`make_context_current`, `should_close`, `set_should_close`. Domain modules
-remain the full API; the surface is sugar, not a boundary.
+`lib.mach` re-exports every public symbol of every split module (Mach has no
+import splat, so the surface is explicit `fwd` lines). It is generated by
+`tools/surface.sh gen` and CI fails if it drifts from the split modules
+(`tools/surface.sh check`). `use glfw: glfw.lib;` gives the whole API as `glfw.init()`,
+`glfw.create_window(...)`, `glfw.KEY_ESCAPE`. The split modules (`glfw.core`,
+`glfw.window`, …) remain importable individually for smaller dependency
+surfaces.
 
-## Linking
+### Requirements and vendoring
 
-The library is source-vendored like all Mach deps; the **consumer's** manifest
-must add the system library to its target:
-
-```toml
-[targets.linux]
-libs = ["glfw"]
-```
-
-`ext fun` symbols then bind dynamically against `libglfw.so` at load time.
-This repo's own manifest does the same for its demo/tests.
+The bindings call the **system** GLFW: `libs = ["glfw"]` resolves to
+`libglfw.so` and binds the `ext fun` symbols dynamically at load time.
+GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
+…). GLFW itself is intentionally not vendored: building it needs a C
+toolchain Mach doesn't drive, and a prebuilt static archive would drag in
+the platform backends' own link dependencies (wayland-client, xkbcommon,
+X11, …) for every consumer. If a fully pinned build is ever needed, a
+committed `libglfw.so` plus `libs = ["dep/glfw/libglfw.so"]` works today;
+rpath handling for non-system locations is the missing piece.
 
 ## Scope of GLFW coverage
 
@@ -156,19 +197,21 @@ This repo's own manifest does the same for its demo/tests.
 ## Demo
 
 `main.mach` (executable target): error callback installed, window + OpenGL
-context, `glClearColor`/`glClear` loaded through `core.proc_address`, animated
+context, `glClearColor`/`glClear` loaded through `get_proc_address`, animated
 clear color, ESC closes via key callback. Serves as living documentation of
 the callback, context, and event-loop idioms.
 
 ## Tests
 
-`test` blocks live beside the code they cover. Display-free tests (version,
-error-before-init) always run; init-dependent tests require a session with a
-display server and are kept in `core.mach` clearly marked.
+`test` blocks live beside the code they cover and are display-free: the
+version query and the pre-init error path (which doubles as the C→Mach
+callback ABI regression test). Paths that need a live window — context
+creation, swap, input events — are exercised by running the demo, not by
+`mach test`.
 
 ## Known toolchain issues surfaced by this project
 
-- `std.runtime` exits via `SYS_exit` (60), not `SYS_exit_group` (231). GLFW's
-  platform backends leave service threads alive, so a process that initialized
-  GLFW never terminates after `main` returns. Needs a mach-std fix; tracked
-  upstream.
+- `std.runtime` exited via `SYS_exit` (60), so GLFW's service threads kept
+  every process alive after `main` returned. Fixed upstream in mach-std
+  v0.4.3 (octalide/mach-std#205); these bindings require that version or
+  newer.

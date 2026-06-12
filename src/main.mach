@@ -1,41 +1,77 @@
+# glfw.main: demo executable for the GLFW bindings.
+#
+# opens a window with an OpenGL context, loads glClearColor/glClear
+# through the context's proc loader, and animates the clear color until
+# the window is closed or ESC is pressed.
+
 use std.runtime;
+use std.types.bool.true;
 use print: std.print;
+use glfw: glfw.lib;
 
-ext fun glfwInit() i32;
-ext fun glfwTerminate();
-ext fun glfwGetVersion(major: *i32, minor: *i32, rev: *i32);
-ext fun glfwSetErrorCallback(callback: fun(i32, *u8)) ptr;
-ext fun glfwCreateWindow(width: i32, height: i32, title: *u8, monitor: ptr, share: ptr) ptr;
+# GlClearColorFun: glClearColor(red, green, blue, alpha).
+def GlClearColorFun: fun(f32, f32, f32, f32);
+# GlClearFun: glClear(mask).
+def GlClearFun: fun(u32);
 
-var got_error: i64 = 0;
+val GL_COLOR_BUFFER_BIT: u32 = 0x00004000;
 
 fun on_error(code: i32, desc: *u8) {
-    got_error = 1;
-    print.printf("error callback fired: code=0x%x desc=%s\n", code::u64, desc);
+    print.eprintf("glfw error 0x%x: %s\n", code::u64, desc);
+}
+
+fun on_key(handle: ptr, key: i32, scancode: i32, action: i32, mods: i32) {
+    if (action == glfw.PRESS && key == glfw.KEY_ESCAPE) {
+        val w: glfw.Window = glfw.window_from_handle(handle);
+        glfw.set_window_should_close(w, true);
+    }
 }
 
 $main.symbol = "main";
 fun main(argc: i64, argv: **u8) i64 {
-    glfwSetErrorCallback(on_error);
+    glfw.set_error_callback(on_error);
 
-    val w: ptr = glfwCreateWindow(1, 1, "probe", nil, nil);
-    if (got_error == 0) {
-        print.println("FAIL: error callback did not fire");
-        ret 1;
-    }
-
-    if (glfwInit() == 0) {
-        print.println("FAIL: glfwInit");
+    if (!glfw.init()) {
+        print.eprintln("failed to initialize GLFW");
         ret 1;
     }
 
     var major: i32 = 0;
     var minor: i32 = 0;
     var rev: i32 = 0;
-    glfwGetVersion(?major, ?minor, ?rev);
+    glfw.get_version(?major, ?minor, ?rev);
     print.printf("GLFW %d.%d.%d\n", major::i64, minor::i64, rev::i64);
 
-    glfwTerminate();
-    print.println("probe OK");
+    val w: glfw.Window = glfw.open_window(800, 600, "mach-glfw");
+    if (!glfw.window_is_valid(w)) {
+        print.eprintln("failed to create window");
+        glfw.terminate();
+        ret 1;
+    }
+
+    glfw.make_context_current(w);
+    glfw.swap_interval(1);
+    glfw.set_key_callback(w, on_key);
+
+    val clear_color: GlClearColorFun = glfw.get_proc_address("glClearColor"):~GlClearColorFun;
+    val clear: GlClearFun = glfw.get_proc_address("glClear"):~GlClearFun;
+    if (clear_color == nil || clear == nil) {
+        print.eprintln("failed to load GL functions");
+        glfw.terminate();
+        ret 1;
+    }
+
+    for (!glfw.window_should_close(w)) {
+        val t: f64 = glfw.get_time();
+        val phase: f64 = (t * 0.25) % 1.0;
+        clear_color(phase::f32, 0.3, 1.0 - phase::f32, 1.0);
+        clear(GL_COLOR_BUFFER_BIT);
+        glfw.swap_buffers(w);
+        glfw.poll_events();
+    }
+
+    glfw.destroy_window(w);
+    glfw.terminate();
+    print.println("bye");
     ret 0;
 }
