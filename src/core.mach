@@ -1,0 +1,193 @@
+# glfw.core: library lifecycle, events, timing, and context management.
+#
+# wraps initialization, the event loop, the timer, the OpenGL context
+# plumbing, and the error query. all functions are thin wrappers over
+# glfw.c with mach-idiomatic types.
+
+use glfw.c;
+use glfw.err;
+use std.types.bool.bool;
+use std.types.string.str;
+
+# connection events delivered to monitor and joystick callbacks.
+pub val CONNECTED:    i32 = 0x00040001;
+pub val DISCONNECTED: i32 = 0x00040002;
+
+# ErrorFun: error callback. receives an error code and a UTF-8 description.
+pub def ErrorFun: fun(i32, *u8);
+
+# init: initialize the GLFW library. call before most other functions.
+# ---
+# ret: true on success
+pub fun init() bool {
+    ret c.glfwInit() != 0;
+}
+
+# terminate: destroy all windows and free GLFW resources.
+pub fun terminate() {
+    c.glfwTerminate();
+}
+
+# init_hint: set an init hint before init. see glfw.hint for ids and values.
+# ---
+# hint:  init hint id
+# value: hint value
+pub fun init_hint(hint: i32, value: i32) {
+    c.glfwInitHint(hint, value);
+}
+
+# get_version: retrieve the run-time GLFW version.
+# ---
+# major: receives the major version
+# minor: receives the minor version
+# rev:   receives the revision
+pub fun get_version(major: *i32, minor: *i32, rev: *i32) {
+    c.glfwGetVersion(major, minor, rev);
+}
+
+# get_version_string: compile-time GLFW version and configuration string.
+# ---
+# ret: static, GLFW-owned string
+pub fun get_version_string() str {
+    ret c.glfwGetVersionString();
+}
+
+# get_platform: the platform selected at init. see hint.PLATFORM_* values.
+# ---
+# ret: platform id, or 0 before init
+pub fun get_platform() i32 {
+    ret c.glfwGetPlatform();
+}
+
+# platform_supported: whether the library was compiled with a platform.
+# ---
+# platform: a hint.PLATFORM_* value
+# ret:      true if supported
+pub fun platform_supported(platform: i32) bool {
+    ret c.glfwPlatformSupported(platform) != 0;
+}
+
+# get_error: code and description of the last error on this thread.
+#
+# clears the stored error. the description pointer is valid until the
+# next error or library deinitialization; pass nil to skip it.
+# ---
+# description: receives a pointer to the error description, or nil
+# ret:         an err.* code, err.NO_ERROR if none
+pub fun get_error(description: **u8) i32 {
+    ret c.glfwGetError(description);
+}
+
+# set_error_callback: install the global error callback.
+#
+# callable before init. the previous callback is dropped.
+# ---
+# callback: error handler, or nil::ErrorFun to clear
+pub fun set_error_callback(callback: ErrorFun) {
+    c.glfwSetErrorCallback(callback);
+}
+
+# poll_events: process pending events and return immediately.
+pub fun poll_events() {
+    c.glfwPollEvents();
+}
+
+# wait_events: block until at least one event arrives, then process all.
+pub fun wait_events() {
+    c.glfwWaitEvents();
+}
+
+# wait_events_timeout: wait_events, but give up after timeout seconds.
+# ---
+# timeout: maximum wait in seconds
+pub fun wait_events_timeout(timeout: f64) {
+    c.glfwWaitEventsTimeout(timeout);
+}
+
+# post_empty_event: wake the event loop from another thread.
+pub fun post_empty_event() {
+    c.glfwPostEmptyEvent();
+}
+
+# get_time: seconds elapsed since init (or the last set_time).
+# ---
+# ret: time in seconds
+pub fun get_time() f64 {
+    ret c.glfwGetTime();
+}
+
+# set_time: reset the GLFW time base.
+# ---
+# time: new time in seconds
+pub fun set_time(time: f64) {
+    c.glfwSetTime(time);
+}
+
+# get_timer_value: current raw timer value in ticks.
+# ---
+# ret: timer value
+pub fun get_timer_value() u64 {
+    ret c.glfwGetTimerValue();
+}
+
+# get_timer_frequency: raw timer frequency in ticks per second.
+# ---
+# ret: timer frequency
+pub fun get_timer_frequency() u64 {
+    ret c.glfwGetTimerFrequency();
+}
+
+# swap_interval: set the buffer-swap interval for the current context.
+# ---
+# interval: minimum frames between swaps (1 enables vsync)
+pub fun swap_interval(interval: i32) {
+    c.glfwSwapInterval(interval);
+}
+
+# extension_supported: whether the current context supports an extension.
+# ---
+# extension: extension name
+# ret:       true if supported
+pub fun extension_supported(extension: str) bool {
+    ret c.glfwExtensionSupported(extension) != 0;
+}
+
+# get_proc_address: address of an OpenGL (ES) function for the current
+# context. reinterpret the result as the proper fun type before calling.
+# ---
+# procname: function name
+# ret:      function address, or nil
+pub fun get_proc_address(procname: str) ptr {
+    ret c.glfwGetProcAddress(procname);
+}
+
+var test_cb_code: i64 = 0;
+
+fun test_error_cb(code: i32, desc: *u8) {
+    test_cb_code = code::i64;
+}
+
+# display-free: relies on GLFW being uninitialized, so it must not run
+# after any test that calls init().
+test "core: error callback fires with NOT_INITIALIZED before init" {
+    var desc: *u8 = nil;
+    test_cb_code = 0;
+    set_error_callback(test_error_cb);
+    c.glfwGetError(nil);
+    c.glfwCreateWindow(1, 1, "t", nil, nil);
+    set_error_callback(nil::ErrorFun);
+    if (test_cb_code != err.NOT_INITIALIZED::i64) { ret 1; }
+    val code: i32 = get_error(?desc);
+    if (code != err.NOT_INITIALIZED) { ret 1; }
+    if (desc == nil) { ret 1; }
+    ret 0;
+}
+
+test "core: get_version matches linked 3.x" {
+    var major: i32 = 0;
+    var minor: i32 = 0;
+    var rev: i32 = 0;
+    get_version(?major, ?minor, ?rev);
+    if (major != 3) { ret 1; }
+    ret 0;
+}
