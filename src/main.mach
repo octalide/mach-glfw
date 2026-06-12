@@ -7,7 +7,7 @@
 use std.runtime;
 use std.types.bool.true;
 use print: std.print;
-use glfw: glfw.lib;
+use glfw.glfw;
 
 # GlClearColorFun: glClearColor(red, green, blue, alpha).
 def GlClearColorFun: fun(f32, f32, f32, f32);
