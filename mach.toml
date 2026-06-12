@@ -1,32 +1,37 @@
 [project]
-id = "glfw"
-target = "native"
-dir_src = "src"
-dir_dep = "dep"
+id      = "glfw"
+version = "0.1.0"
+module  = "glfw.mach"
+target  = "native"
+src     = "src"
+dep     = "dep"
+out     = "out/{target}/bin/{name}{ext}"
+obj     = "out/{target}/obj"
 
-[targets.linux]
-os = "linux"
-isa = "x86_64"
-entrypoint = "main.mach"
-binary = "linux/bin/glfw"
+[target.linux]
+isa  = "x86_64"
+os   = "linux"
+abi  = "sysv64"
 libs = ["glfw"]
 
-[targets.windows]
-os = "windows"
-isa = "x86_64"
-entrypoint = "main.mach"
-binary = "windows/bin/glfw.exe"
+[target.windows]
+isa  = "x86_64"
+os   = "windows"
+abi  = "win64"
+ext  = ".exe"
 # declared intent: the windows toolchain is not yet validated end-to-end
 libs = ["glfw3.dll"]
 
-[targets.darwin]
-os = "darwin"
-isa = "x86_64"
-entrypoint = "main.mach"
-binary = "darwin/bin/glfw"
+[target.darwin]
+isa  = "x86_64"
+os   = "darwin"
+abi  = "sysv64"
 # declared intent: Mach-O dynamic imports are not yet implemented in mach
 libs = ["glfw"]
 
+[bin.glfw]
+entry = "main.mach"
+
 [deps.mach-std]
-url = "https://github.com/octalide/mach-std"
-ref = "branch/main"
+git = "https://github.com/octalide/mach-std"
+ref = "v0.5.0"
