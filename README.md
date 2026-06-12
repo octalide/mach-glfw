@@ -26,7 +26,7 @@ do not need to redeclare `libs = ["glfw"]`:
 ```toml
 [deps.mach-glfw]
 git = "https://github.com/octalide/mach-glfw"
-ref = "v0.5.0"
+ref = "branch/main"
 ```
 
 ## Goals
@@ -131,10 +131,6 @@ Error model — GLFW's own, not `Result`:
   callback / set the last error).
 - `get_error(description: **u8) i32` wraps `glfwGetError`; `NO_ERROR`,
   `NOT_INITIALIZED`, … (module `glfw.err`) name the codes.
-- Rationale: Mach's `Result[T, E]` requires explicit generic instantiation at
-  every unwrap (`unwrap_ok[Window, Error](r)`), which costs more ergonomics
-  than the sentinel + last-error model it would replace. GLFW already
-  guarantees benign behavior on error paths.
 
 Callback model:
 
@@ -175,12 +171,7 @@ smaller dependency surfaces.
 The bindings call the **system** GLFW: `libs = ["glfw"]` resolves to
 `libglfw.so` and binds the `ext fun` symbols dynamically at load time.
 GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
-…). GLFW itself is intentionally not vendored: building it needs a C
-toolchain Mach doesn't drive, and a prebuilt static archive would drag in
-the platform backends' own link dependencies (wayland-client, xkbcommon,
-X11, …) for every consumer. If a fully pinned build is ever needed, a
-committed `libglfw.so` plus `libs = ["dep/glfw/libglfw.so"]` works today;
-rpath handling for non-system locations is the missing piece.
+…). GLFW itself is intentionally not vendored.
 
 ## Scope of GLFW coverage
 
@@ -208,10 +199,3 @@ version query and the pre-init error path (which doubles as the C→Mach
 callback ABI regression test). Paths that need a live window — context
 creation, swap, input events — are exercised by running the demo, not by
 `mach test`.
-
-## Known toolchain issues surfaced by this project
-
-- `std.runtime` exited via `SYS_exit` (60), so GLFW's service threads kept
-  every process alive after `main` returned. Fixed upstream in mach-std
-  v0.4.3 (octalide/mach-std#205); these bindings require that version or
-  newer.
