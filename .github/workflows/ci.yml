@@ -16,7 +16,7 @@ jobs:
     name: Full Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Fetch released mach
         env:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Cache GLFW
         id: cache-glfw
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/glfw-install
           key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
@@ -62,7 +62,7 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Fetch released mach
         env:
@@ -73,7 +73,7 @@ jobs:
 
       - name: Cache GLFW
         id: cache-glfw
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/glfw-install
           key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
