@@ -27,7 +27,7 @@ fun on_key(handle: ptr, key: i32, scancode: i32, action: i32, mods: i32) {
     }
 }
 
-`symbol("main")`
+#[symbol("main")]
 fun main(argc: i64, argv: **u8) i64 {
     glfw.set_error_callback(on_error);
 

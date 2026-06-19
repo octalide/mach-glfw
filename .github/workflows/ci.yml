@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 env:
-  MACH_VERSION: v2.0.0
+  MACH_VERSION: v2.4.0
   GLFW_VERSION: "3.4"
 
 jobs:
