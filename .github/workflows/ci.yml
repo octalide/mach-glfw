@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 env:
-  MACH_VERSION: v1.4.0
+  MACH_VERSION: v2.0.0
   GLFW_VERSION: "3.4"
 
 jobs:
@@ -16,18 +16,23 @@ jobs:
     name: Full Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Fetch released mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download "$MACH_VERSION" -R octalide/mach -p mach -D /usr/local/bin
-          chmod +x /usr/local/bin/mach
+          set -euo pipefail
+          mkdir -p /tmp/machdl
+          gh release download "$MACH_VERSION" -R octalide/mach \
+            -p 'mach-*-x86_64-linux.tar.gz' -D /tmp/machdl --clobber
+          tar -xzf /tmp/machdl/mach-*-x86_64-linux.tar.gz -C /tmp/machdl
+          install -m 0755 /tmp/machdl/mach /usr/local/bin/mach
+          mach info
 
       - name: Cache GLFW
         id: cache-glfw
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/glfw-install
           key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
@@ -62,18 +67,23 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Fetch released mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download "$MACH_VERSION" -R octalide/mach -p mach -D /usr/local/bin
-          chmod +x /usr/local/bin/mach
+          set -euo pipefail
+          mkdir -p /tmp/machdl
+          gh release download "$MACH_VERSION" -R octalide/mach \
+            -p 'mach-*-x86_64-linux.tar.gz' -D /tmp/machdl --clobber
+          tar -xzf /tmp/machdl/mach-*-x86_64-linux.tar.gz -C /tmp/machdl
+          install -m 0755 /tmp/machdl/mach /usr/local/bin/mach
+          mach info
 
       - name: Cache GLFW
         id: cache-glfw
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/glfw-install
           key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
