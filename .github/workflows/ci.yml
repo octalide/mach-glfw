@@ -8,7 +8,6 @@ permissions:
   contents: read
 
 env:
-  MACH_VERSION: v2.4.0
   GLFW_VERSION: "3.4"
 
 jobs:
@@ -24,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/machdl
-          gh release download "$MACH_VERSION" -R briar-systems/mach \
+          gh release download -R briar-systems/mach \
             -p 'mach-*-x86_64-linux.tar.gz' -D /tmp/machdl --clobber
           tar -xzf /tmp/machdl/mach-*-x86_64-linux.tar.gz -C /tmp/machdl
           install -m 0755 /tmp/machdl/mach /usr/local/bin/mach
@@ -75,7 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/machdl
-          gh release download "$MACH_VERSION" -R briar-systems/mach \
+          gh release download -R briar-systems/mach \
             -p 'mach-*-x86_64-linux.tar.gz' -D /tmp/machdl --clobber
           tar -xzf /tmp/machdl/mach-*-x86_64-linux.tar.gz -C /tmp/machdl
           install -m 0755 /tmp/machdl/mach /usr/local/bin/mach
