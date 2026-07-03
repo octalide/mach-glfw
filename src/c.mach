@@ -1,11 +1,11 @@
-# glfw.c: raw C-ABI imports of GLFW 3.4.
+# raw C-ABI imports of GLFW 3.4
 #
 # every GLFW function is a pub ext fun with its C name and C-faithful types,
 # in glfw3.h declaration order. opaque handles (GLFWwindow*, GLFWmonitor*,
 # GLFWcursor*) are ptr; transparent structs are recs with identical layout.
 # Vulkan functions and glfwInitAllocator are excluded (deferred).
 
-# Vidmode: video mode of a monitor (GLFWvidmode), C-identical layout.
+# video mode of a monitor (GLFWvidmode), C-identical layout
 pub rec Vidmode {
     width:       i32;
     height:      i32;
@@ -15,7 +15,7 @@ pub rec Vidmode {
     refreshRate: i32;
 }
 
-# Gammaramp: monitor gamma ramp (GLFWgammaramp), C-identical layout.
+# monitor gamma ramp (GLFWgammaramp), C-identical layout
 pub rec Gammaramp {
     red:   *u16;
     green: *u16;
@@ -23,366 +23,366 @@ pub rec Gammaramp {
     size:  u32;
 }
 
-# Image: image data for icons and cursors (GLFWimage), C-identical layout.
+# image data for icons and cursors (GLFWimage), C-identical layout
 pub rec Image {
     width:  i32;
     height: i32;
     pixels: *u8;
 }
 
-# Gamepadstate: input state of a gamepad (GLFWgamepadstate), C-identical layout.
+# input state of a gamepad (GLFWgamepadstate), C-identical layout
 pub rec Gamepadstate {
     buttons: [15]u8;
     axes:    [6]f32;
 }
 
-# glfwInit: initializes the GLFW library.
+# initializes the GLFW library
 pub ext fun glfwInit() i32;
 
-# glfwTerminate: terminates the GLFW library.
+# terminates the GLFW library
 pub ext fun glfwTerminate();
 
-# glfwInitHint: sets an init hint to the desired value.
+# sets an init hint to the desired value
 pub ext fun glfwInitHint(hint: i32, value: i32);
 
-# glfwGetVersion: retrieves the version of the GLFW library.
+# retrieves the version of the GLFW library
 pub ext fun glfwGetVersion(major: *i32, minor: *i32, rev: *i32);
 
-# glfwGetVersionString: returns a string describing the compile-time configuration.
+# returns a string describing the compile-time configuration
 pub ext fun glfwGetVersionString() *u8;
 
-# glfwGetError: returns and clears the last error for the calling thread.
+# returns and clears the last error for the calling thread
 pub ext fun glfwGetError(description: **u8) i32;
 
-# glfwSetErrorCallback: sets the error callback, returns the previous one.
+# sets the error callback, returns the previous one
 pub ext fun glfwSetErrorCallback(callback: fun(i32, *u8)) ptr;
 
-# glfwGetPlatform: returns the currently selected platform.
+# returns the currently selected platform
 pub ext fun glfwGetPlatform() i32;
 
-# glfwPlatformSupported: returns whether the library was compiled with platform support.
+# returns whether the library was compiled with platform support
 pub ext fun glfwPlatformSupported(platform: i32) i32;
 
-# glfwGetMonitors: returns the currently connected monitors.
+# returns the currently connected monitors
 pub ext fun glfwGetMonitors(count: *i32) *ptr;
 
-# glfwGetPrimaryMonitor: returns the primary monitor.
+# returns the primary monitor
 pub ext fun glfwGetPrimaryMonitor() ptr;
 
-# glfwGetMonitorPos: retrieves the position of the monitor's viewport.
+# retrieves the position of the monitor's viewport
 pub ext fun glfwGetMonitorPos(monitor: ptr, xpos: *i32, ypos: *i32);
 
-# glfwGetMonitorWorkarea: retrieves the work area of the monitor.
+# retrieves the work area of the monitor
 pub ext fun glfwGetMonitorWorkarea(monitor: ptr, xpos: *i32, ypos: *i32, width: *i32, height: *i32);
 
-# glfwGetMonitorPhysicalSize: retrieves the physical size of the monitor in millimetres.
+# retrieves the physical size of the monitor in millimetres
 pub ext fun glfwGetMonitorPhysicalSize(monitor: ptr, widthMM: *i32, heightMM: *i32);
 
-# glfwGetMonitorContentScale: retrieves the content scale for the monitor.
+# retrieves the content scale for the monitor
 pub ext fun glfwGetMonitorContentScale(monitor: ptr, xscale: *f32, yscale: *f32);
 
-# glfwGetMonitorName: returns the human-readable name of the monitor.
+# returns the human-readable name of the monitor
 pub ext fun glfwGetMonitorName(monitor: ptr) *u8;
 
-# glfwSetMonitorUserPointer: sets the user pointer of the monitor.
+# sets the user pointer of the monitor
 pub ext fun glfwSetMonitorUserPointer(monitor: ptr, pointer: ptr);
 
-# glfwGetMonitorUserPointer: returns the user pointer of the monitor.
+# returns the user pointer of the monitor
 pub ext fun glfwGetMonitorUserPointer(monitor: ptr) ptr;
 
-# glfwSetMonitorCallback: sets the monitor configuration callback, returns the previous one.
+# sets the monitor configuration callback, returns the previous one
 pub ext fun glfwSetMonitorCallback(callback: fun(ptr, i32)) ptr;
 
-# glfwGetVideoModes: returns the available video modes for the monitor.
+# returns the available video modes for the monitor
 pub ext fun glfwGetVideoModes(monitor: ptr, count: *i32) *Vidmode;
 
-# glfwGetVideoMode: returns the current mode of the monitor.
+# returns the current mode of the monitor
 pub ext fun glfwGetVideoMode(monitor: ptr) *Vidmode;
 
-# glfwSetGamma: generates a gamma ramp from an exponent and sets it.
+# generates a gamma ramp from an exponent and sets it
 pub ext fun glfwSetGamma(monitor: ptr, gamma: f32);
 
-# glfwGetGammaRamp: returns the current gamma ramp for the monitor.
+# returns the current gamma ramp for the monitor
 pub ext fun glfwGetGammaRamp(monitor: ptr) *Gammaramp;
 
-# glfwSetGammaRamp: sets the current gamma ramp for the monitor.
+# sets the current gamma ramp for the monitor
 pub ext fun glfwSetGammaRamp(monitor: ptr, ramp: *Gammaramp);
 
-# glfwDefaultWindowHints: resets all window hints to their default values.
+# resets all window hints to their default values
 pub ext fun glfwDefaultWindowHints();
 
-# glfwWindowHint: sets a window hint to the desired value.
+# sets a window hint to the desired value
 pub ext fun glfwWindowHint(hint: i32, value: i32);
 
-# glfwWindowHintString: sets a string-valued window hint.
+# sets a string-valued window hint
 pub ext fun glfwWindowHintString(hint: i32, value: *u8);
 
-# glfwCreateWindow: creates a window and its associated context.
+# creates a window and its associated context
 pub ext fun glfwCreateWindow(width: i32, height: i32, title: *u8, monitor: ptr, share: ptr) ptr;
 
-# glfwDestroyWindow: destroys the window and its context.
+# destroys the window and its context
 pub ext fun glfwDestroyWindow(window: ptr);
 
-# glfwWindowShouldClose: returns the close flag of the window.
+# returns the close flag of the window
 pub ext fun glfwWindowShouldClose(window: ptr) i32;
 
-# glfwSetWindowShouldClose: sets the close flag of the window.
+# sets the close flag of the window
 pub ext fun glfwSetWindowShouldClose(window: ptr, value: i32);
 
-# glfwGetWindowTitle: returns the title of the window.
+# returns the title of the window
 pub ext fun glfwGetWindowTitle(window: ptr) *u8;
 
-# glfwSetWindowTitle: sets the title of the window.
+# sets the title of the window
 pub ext fun glfwSetWindowTitle(window: ptr, title: *u8);
 
-# glfwSetWindowIcon: sets the icon for the window.
+# sets the icon for the window
 pub ext fun glfwSetWindowIcon(window: ptr, count: i32, images: *Image);
 
-# glfwGetWindowPos: retrieves the position of the window's content area.
+# retrieves the position of the window's content area
 pub ext fun glfwGetWindowPos(window: ptr, xpos: *i32, ypos: *i32);
 
-# glfwSetWindowPos: sets the position of the window's content area.
+# sets the position of the window's content area
 pub ext fun glfwSetWindowPos(window: ptr, xpos: i32, ypos: i32);
 
-# glfwGetWindowSize: retrieves the size of the window's content area.
+# retrieves the size of the window's content area
 pub ext fun glfwGetWindowSize(window: ptr, width: *i32, height: *i32);
 
-# glfwSetWindowSizeLimits: sets the size limits of the window.
+# sets the size limits of the window
 pub ext fun glfwSetWindowSizeLimits(window: ptr, minwidth: i32, minheight: i32, maxwidth: i32, maxheight: i32);
 
-# glfwSetWindowAspectRatio: sets the aspect ratio of the window.
+# sets the aspect ratio of the window
 pub ext fun glfwSetWindowAspectRatio(window: ptr, numer: i32, denom: i32);
 
-# glfwSetWindowSize: sets the size of the window's content area.
+# sets the size of the window's content area
 pub ext fun glfwSetWindowSize(window: ptr, width: i32, height: i32);
 
-# glfwGetFramebufferSize: retrieves the size of the window's framebuffer.
+# retrieves the size of the window's framebuffer
 pub ext fun glfwGetFramebufferSize(window: ptr, width: *i32, height: *i32);
 
-# glfwGetWindowFrameSize: retrieves the size of the window's frame edges.
+# retrieves the size of the window's frame edges
 pub ext fun glfwGetWindowFrameSize(window: ptr, left: *i32, top: *i32, right: *i32, bottom: *i32);
 
-# glfwGetWindowContentScale: retrieves the content scale for the window.
+# retrieves the content scale for the window
 pub ext fun glfwGetWindowContentScale(window: ptr, xscale: *f32, yscale: *f32);
 
-# glfwGetWindowOpacity: returns the opacity of the whole window.
+# returns the opacity of the whole window
 pub ext fun glfwGetWindowOpacity(window: ptr) f32;
 
-# glfwSetWindowOpacity: sets the opacity of the whole window.
+# sets the opacity of the whole window
 pub ext fun glfwSetWindowOpacity(window: ptr, opacity: f32);
 
-# glfwIconifyWindow: iconifies (minimizes) the window.
+# iconifies (minimizes) the window
 pub ext fun glfwIconifyWindow(window: ptr);
 
-# glfwRestoreWindow: restores the window from iconification or maximization.
+# restores the window from iconification or maximization
 pub ext fun glfwRestoreWindow(window: ptr);
 
-# glfwMaximizeWindow: maximizes the window.
+# maximizes the window
 pub ext fun glfwMaximizeWindow(window: ptr);
 
-# glfwShowWindow: makes the window visible.
+# makes the window visible
 pub ext fun glfwShowWindow(window: ptr);
 
-# glfwHideWindow: hides the window.
+# hides the window
 pub ext fun glfwHideWindow(window: ptr);
 
-# glfwFocusWindow: brings the window to front and gives it input focus.
+# brings the window to front and gives it input focus
 pub ext fun glfwFocusWindow(window: ptr);
 
-# glfwRequestWindowAttention: requests user attention to the window.
+# requests user attention to the window
 pub ext fun glfwRequestWindowAttention(window: ptr);
 
-# glfwGetWindowMonitor: returns the monitor the window uses for full screen mode.
+# returns the monitor the window uses for full screen mode
 pub ext fun glfwGetWindowMonitor(window: ptr) ptr;
 
-# glfwSetWindowMonitor: sets the mode, monitor, video mode and placement of the window.
+# sets the mode, monitor, video mode and placement of the window
 pub ext fun glfwSetWindowMonitor(window: ptr, monitor: ptr, xpos: i32, ypos: i32, width: i32, height: i32, refreshRate: i32);
 
-# glfwGetWindowAttrib: returns an attribute of the window.
+# returns an attribute of the window
 pub ext fun glfwGetWindowAttrib(window: ptr, attrib: i32) i32;
 
-# glfwSetWindowAttrib: sets an attribute of the window.
+# sets an attribute of the window
 pub ext fun glfwSetWindowAttrib(window: ptr, attrib: i32, value: i32);
 
-# glfwSetWindowUserPointer: sets the user pointer of the window.
+# sets the user pointer of the window
 pub ext fun glfwSetWindowUserPointer(window: ptr, pointer: ptr);
 
-# glfwGetWindowUserPointer: returns the user pointer of the window.
+# returns the user pointer of the window
 pub ext fun glfwGetWindowUserPointer(window: ptr) ptr;
 
-# glfwSetWindowPosCallback: sets the position callback for the window, returns the previous one.
+# sets the position callback for the window, returns the previous one
 pub ext fun glfwSetWindowPosCallback(window: ptr, callback: fun(ptr, i32, i32)) ptr;
 
-# glfwSetWindowSizeCallback: sets the size callback for the window, returns the previous one.
+# sets the size callback for the window, returns the previous one
 pub ext fun glfwSetWindowSizeCallback(window: ptr, callback: fun(ptr, i32, i32)) ptr;
 
-# glfwSetWindowCloseCallback: sets the close callback for the window, returns the previous one.
+# sets the close callback for the window, returns the previous one
 pub ext fun glfwSetWindowCloseCallback(window: ptr, callback: fun(ptr)) ptr;
 
-# glfwSetWindowRefreshCallback: sets the refresh callback for the window, returns the previous one.
+# sets the refresh callback for the window, returns the previous one
 pub ext fun glfwSetWindowRefreshCallback(window: ptr, callback: fun(ptr)) ptr;
 
-# glfwSetWindowFocusCallback: sets the focus callback for the window, returns the previous one.
+# sets the focus callback for the window, returns the previous one
 pub ext fun glfwSetWindowFocusCallback(window: ptr, callback: fun(ptr, i32)) ptr;
 
-# glfwSetWindowIconifyCallback: sets the iconify callback for the window, returns the previous one.
+# sets the iconify callback for the window, returns the previous one
 pub ext fun glfwSetWindowIconifyCallback(window: ptr, callback: fun(ptr, i32)) ptr;
 
-# glfwSetWindowMaximizeCallback: sets the maximize callback for the window, returns the previous one.
+# sets the maximize callback for the window, returns the previous one
 pub ext fun glfwSetWindowMaximizeCallback(window: ptr, callback: fun(ptr, i32)) ptr;
 
-# glfwSetFramebufferSizeCallback: sets the framebuffer resize callback for the window, returns the previous one.
+# sets the framebuffer resize callback for the window, returns the previous one
 pub ext fun glfwSetFramebufferSizeCallback(window: ptr, callback: fun(ptr, i32, i32)) ptr;
 
-# glfwSetWindowContentScaleCallback: sets the content scale callback for the window, returns the previous one.
+# sets the content scale callback for the window, returns the previous one
 pub ext fun glfwSetWindowContentScaleCallback(window: ptr, callback: fun(ptr, f32, f32)) ptr;
 
-# glfwPollEvents: processes all pending events.
+# processes all pending events
 pub ext fun glfwPollEvents();
 
-# glfwWaitEvents: waits until events are queued and processes them.
+# waits until events are queued and processes them
 pub ext fun glfwWaitEvents();
 
-# glfwWaitEventsTimeout: waits with timeout until events are queued and processes them.
+# waits with timeout until events are queued and processes them
 pub ext fun glfwWaitEventsTimeout(timeout: f64);
 
-# glfwPostEmptyEvent: posts an empty event to wake up the event thread.
+# posts an empty event to wake up the event thread
 pub ext fun glfwPostEmptyEvent();
 
-# glfwGetInputMode: returns the value of an input option for the window.
+# returns the value of an input option for the window
 pub ext fun glfwGetInputMode(window: ptr, mode: i32) i32;
 
-# glfwSetInputMode: sets an input option for the window.
+# sets an input option for the window
 pub ext fun glfwSetInputMode(window: ptr, mode: i32, value: i32);
 
-# glfwRawMouseMotionSupported: returns whether raw mouse motion is supported.
+# returns whether raw mouse motion is supported
 pub ext fun glfwRawMouseMotionSupported() i32;
 
-# glfwGetKeyName: returns the layout-specific name of the printable key.
+# returns the layout-specific name of the printable key
 pub ext fun glfwGetKeyName(key: i32, scancode: i32) *u8;
 
-# glfwGetKeyScancode: returns the platform-specific scancode of the key.
+# returns the platform-specific scancode of the key
 pub ext fun glfwGetKeyScancode(key: i32) i32;
 
-# glfwGetKey: returns the last reported state of a keyboard key for the window.
+# returns the last reported state of a keyboard key for the window
 pub ext fun glfwGetKey(window: ptr, key: i32) i32;
 
-# glfwGetMouseButton: returns the last reported state of a mouse button for the window.
+# returns the last reported state of a mouse button for the window
 pub ext fun glfwGetMouseButton(window: ptr, button: i32) i32;
 
-# glfwGetCursorPos: retrieves the position of the cursor relative to the window's content area.
+# retrieves the position of the cursor relative to the window's content area
 pub ext fun glfwGetCursorPos(window: ptr, xpos: *f64, ypos: *f64);
 
-# glfwSetCursorPos: sets the position of the cursor relative to the window's content area.
+# sets the position of the cursor relative to the window's content area
 pub ext fun glfwSetCursorPos(window: ptr, xpos: f64, ypos: f64);
 
-# glfwCreateCursor: creates a custom cursor from an image.
+# creates a custom cursor from an image
 pub ext fun glfwCreateCursor(image: *Image, xhot: i32, yhot: i32) ptr;
 
-# glfwCreateStandardCursor: creates a cursor with a standard shape.
+# creates a cursor with a standard shape
 pub ext fun glfwCreateStandardCursor(shape: i32) ptr;
 
-# glfwDestroyCursor: destroys the cursor.
+# destroys the cursor
 pub ext fun glfwDestroyCursor(cursor: ptr);
 
-# glfwSetCursor: sets the cursor for the window.
+# sets the cursor for the window
 pub ext fun glfwSetCursor(window: ptr, cursor: ptr);
 
-# glfwSetKeyCallback: sets the key callback for the window, returns the previous one.
+# sets the key callback for the window, returns the previous one
 pub ext fun glfwSetKeyCallback(window: ptr, callback: fun(ptr, i32, i32, i32, i32)) ptr;
 
-# glfwSetCharCallback: sets the Unicode character callback for the window, returns the previous one.
+# sets the Unicode character callback for the window, returns the previous one
 pub ext fun glfwSetCharCallback(window: ptr, callback: fun(ptr, u32)) ptr;
 
-# glfwSetCharModsCallback: sets the character-with-modifiers callback for the window, returns the previous one.
+# sets the character-with-modifiers callback for the window, returns the previous one
 pub ext fun glfwSetCharModsCallback(window: ptr, callback: fun(ptr, u32, i32)) ptr;
 
-# glfwSetMouseButtonCallback: sets the mouse button callback for the window, returns the previous one.
+# sets the mouse button callback for the window, returns the previous one
 pub ext fun glfwSetMouseButtonCallback(window: ptr, callback: fun(ptr, i32, i32, i32)) ptr;
 
-# glfwSetCursorPosCallback: sets the cursor position callback for the window, returns the previous one.
+# sets the cursor position callback for the window, returns the previous one
 pub ext fun glfwSetCursorPosCallback(window: ptr, callback: fun(ptr, f64, f64)) ptr;
 
-# glfwSetCursorEnterCallback: sets the cursor enter/leave callback for the window, returns the previous one.
+# sets the cursor enter/leave callback for the window, returns the previous one
 pub ext fun glfwSetCursorEnterCallback(window: ptr, callback: fun(ptr, i32)) ptr;
 
-# glfwSetScrollCallback: sets the scroll callback for the window, returns the previous one.
+# sets the scroll callback for the window, returns the previous one
 pub ext fun glfwSetScrollCallback(window: ptr, callback: fun(ptr, f64, f64)) ptr;
 
-# glfwSetDropCallback: sets the path drop callback for the window, returns the previous one.
+# sets the path drop callback for the window, returns the previous one
 pub ext fun glfwSetDropCallback(window: ptr, callback: fun(ptr, i32, **u8)) ptr;
 
-# glfwJoystickPresent: returns whether the joystick is present.
+# returns whether the joystick is present
 pub ext fun glfwJoystickPresent(jid: i32) i32;
 
-# glfwGetJoystickAxes: returns the values of all axes of the joystick.
+# returns the values of all axes of the joystick
 pub ext fun glfwGetJoystickAxes(jid: i32, count: *i32) *f32;
 
-# glfwGetJoystickButtons: returns the state of all buttons of the joystick.
+# returns the state of all buttons of the joystick
 pub ext fun glfwGetJoystickButtons(jid: i32, count: *i32) *u8;
 
-# glfwGetJoystickHats: returns the state of all hats of the joystick.
+# returns the state of all hats of the joystick
 pub ext fun glfwGetJoystickHats(jid: i32, count: *i32) *u8;
 
-# glfwGetJoystickName: returns the name of the joystick.
+# returns the name of the joystick
 pub ext fun glfwGetJoystickName(jid: i32) *u8;
 
-# glfwGetJoystickGUID: returns the SDL-compatible GUID of the joystick.
+# returns the SDL-compatible GUID of the joystick
 pub ext fun glfwGetJoystickGUID(jid: i32) *u8;
 
-# glfwSetJoystickUserPointer: sets the user pointer of the joystick.
+# sets the user pointer of the joystick
 pub ext fun glfwSetJoystickUserPointer(jid: i32, pointer: ptr);
 
-# glfwGetJoystickUserPointer: returns the user pointer of the joystick.
+# returns the user pointer of the joystick
 pub ext fun glfwGetJoystickUserPointer(jid: i32) ptr;
 
-# glfwJoystickIsGamepad: returns whether the joystick has a gamepad mapping.
+# returns whether the joystick has a gamepad mapping
 pub ext fun glfwJoystickIsGamepad(jid: i32) i32;
 
-# glfwSetJoystickCallback: sets the joystick configuration callback, returns the previous one.
+# sets the joystick configuration callback, returns the previous one
 pub ext fun glfwSetJoystickCallback(callback: fun(i32, i32)) ptr;
 
-# glfwUpdateGamepadMappings: adds the specified SDL_GameControllerDB gamepad mappings.
+# adds the specified SDL_GameControllerDB gamepad mappings
 pub ext fun glfwUpdateGamepadMappings(string: *u8) i32;
 
-# glfwGetGamepadName: returns the human-readable gamepad name for the joystick.
+# returns the human-readable gamepad name for the joystick
 pub ext fun glfwGetGamepadName(jid: i32) *u8;
 
-# glfwGetGamepadState: retrieves the state of the joystick remapped as a gamepad.
+# retrieves the state of the joystick remapped as a gamepad
 pub ext fun glfwGetGamepadState(jid: i32, state: *Gamepadstate) i32;
 
-# glfwSetClipboardString: sets the clipboard to the specified string.
+# sets the clipboard to the specified string
 pub ext fun glfwSetClipboardString(window: ptr, string: *u8);
 
-# glfwGetClipboardString: returns the contents of the clipboard as a string.
+# returns the contents of the clipboard as a string
 pub ext fun glfwGetClipboardString(window: ptr) *u8;
 
-# glfwGetTime: returns the GLFW time in seconds.
+# returns the GLFW time in seconds
 pub ext fun glfwGetTime() f64;
 
-# glfwSetTime: sets the GLFW time in seconds.
+# sets the GLFW time in seconds
 pub ext fun glfwSetTime(time: f64);
 
-# glfwGetTimerValue: returns the current value of the raw timer.
+# returns the current value of the raw timer
 pub ext fun glfwGetTimerValue() u64;
 
-# glfwGetTimerFrequency: returns the frequency of the raw timer in Hz.
+# returns the frequency of the raw timer in Hz
 pub ext fun glfwGetTimerFrequency() u64;
 
-# glfwMakeContextCurrent: makes the context of the window current for the calling thread.
+# makes the context of the window current for the calling thread
 pub ext fun glfwMakeContextCurrent(window: ptr);
 
-# glfwGetCurrentContext: returns the window whose context is current on the calling thread.
+# returns the window whose context is current on the calling thread
 pub ext fun glfwGetCurrentContext() ptr;
 
-# glfwSwapBuffers: swaps the front and back buffers of the window.
+# swaps the front and back buffers of the window
 pub ext fun glfwSwapBuffers(window: ptr);
 
-# glfwSwapInterval: sets the swap interval for the current context.
+# sets the swap interval for the current context
 pub ext fun glfwSwapInterval(interval: i32);
 
-# glfwExtensionSupported: returns whether the extension is supported by the current context.
+# returns whether the extension is supported by the current context
 pub ext fun glfwExtensionSupported(extension: *u8) i32;
 
-# glfwGetProcAddress: returns the address of the specified function for the current context.
+# returns the address of the specified function for the current context
 pub ext fun glfwGetProcAddress(procname: *u8) ptr;

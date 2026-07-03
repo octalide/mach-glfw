@@ -1,4 +1,4 @@
-# glfw.err: error codes.
+# error codes
 
 pub val NO_ERROR: i32 = 0;
 pub val NOT_INITIALIZED: i32 = 0x00010001;

@@ -1,4 +1,4 @@
-# glfw.joystick: joystick ids, hat states, and gamepad buttons and axes.
+# joystick ids, hat states, and gamepad buttons and axes
 
 # joystick ids
 pub val JOYSTICK_1: i32 = 0;

@@ -1,4 +1,4 @@
-# glfw.main: demo executable for the GLFW bindings.
+# demo executable for the GLFW bindings
 #
 # opens a window with an OpenGL context, loads glClearColor/glClear
 # through the context's proc loader, and animates the clear color until
@@ -9,9 +9,9 @@ use std.types.bool.true;
 use print: std.print;
 use glfw.glfw;
 
-# GlClearColorFun: glClearColor(red, green, blue, alpha).
+# glClearColor(red, green, blue, alpha)
 def GlClearColorFun: fun(f32, f32, f32, f32);
-# GlClearFun: glClear(mask).
+# glClear(mask)
 def GlClearFun: fun(u32);
 
 val GL_COLOR_BUFFER_BIT: u32 = 0x00004000;

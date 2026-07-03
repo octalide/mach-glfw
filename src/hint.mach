@@ -1,4 +1,4 @@
-# glfw.hint: init hint, window hint, and window attribute ids plus their values.
+# init hint, window hint, and window attribute ids plus their values
 
 # init hints
 pub val JOYSTICK_HAT_BUTTONS: i32 = 0x00050001;
@@ -74,7 +74,7 @@ pub val WAYLAND_APP_ID: i32 = 0x00026001;
 pub val TRUE: i32 = 1;
 pub val FALSE: i32 = 0;
 pub val DONT_CARE: i32 = -1;
-# ANY_POSITION: 0x80000000 as an i32 bit pattern, for POSITION_X/POSITION_Y
+# 0x80000000 as an i32 bit pattern, for POSITION_X/POSITION_Y
 pub val ANY_POSITION: i32 = -2147483648;
 
 # client api values

@@ -1,4 +1,4 @@
-# glfw.mouse: mouse buttons and standard cursor shapes.
+# mouse buttons and standard cursor shapes
 
 # mouse buttons
 pub val MOUSE_BUTTON_1: i32 = 0;

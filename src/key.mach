@@ -1,4 +1,4 @@
-# glfw.key: key codes, modifier bits, and input actions.
+# key codes, modifier bits, and input actions
 
 # input actions
 pub val RELEASE: i32 = 0;
