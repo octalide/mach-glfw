@@ -1,124 +1,124 @@
 # init hint, window hint, and window attribute ids plus their values
 
 # init hints
-pub val JOYSTICK_HAT_BUTTONS: i32 = 0x00050001;
-pub val ANGLE_PLATFORM_TYPE: i32 = 0x00050002;
-pub val PLATFORM: i32 = 0x00050003;
-pub val COCOA_CHDIR_RESOURCES: i32 = 0x00051001;
-pub val COCOA_MENUBAR: i32 = 0x00051002;
+pub val JOYSTICK_HAT_BUTTONS:   i32 = 0x00050001;
+pub val ANGLE_PLATFORM_TYPE:    i32 = 0x00050002;
+pub val PLATFORM:               i32 = 0x00050003;
+pub val COCOA_CHDIR_RESOURCES:  i32 = 0x00051001;
+pub val COCOA_MENUBAR:          i32 = 0x00051002;
 pub val X11_XCB_VULKAN_SURFACE: i32 = 0x00052001;
-pub val WAYLAND_LIBDECOR: i32 = 0x00053001;
+pub val WAYLAND_LIBDECOR:       i32 = 0x00053001;
 
 # window hints and attributes
-pub val FOCUSED: i32 = 0x00020001;
-pub val ICONIFIED: i32 = 0x00020002;
-pub val RESIZABLE: i32 = 0x00020003;
-pub val VISIBLE: i32 = 0x00020004;
-pub val DECORATED: i32 = 0x00020005;
-pub val AUTO_ICONIFY: i32 = 0x00020006;
-pub val FLOATING: i32 = 0x00020007;
-pub val MAXIMIZED: i32 = 0x00020008;
-pub val CENTER_CURSOR: i32 = 0x00020009;
+pub val FOCUSED:                 i32 = 0x00020001;
+pub val ICONIFIED:               i32 = 0x00020002;
+pub val RESIZABLE:               i32 = 0x00020003;
+pub val VISIBLE:                 i32 = 0x00020004;
+pub val DECORATED:               i32 = 0x00020005;
+pub val AUTO_ICONIFY:            i32 = 0x00020006;
+pub val FLOATING:                i32 = 0x00020007;
+pub val MAXIMIZED:               i32 = 0x00020008;
+pub val CENTER_CURSOR:           i32 = 0x00020009;
 pub val TRANSPARENT_FRAMEBUFFER: i32 = 0x0002000A;
-pub val HOVERED: i32 = 0x0002000B;
-pub val FOCUS_ON_SHOW: i32 = 0x0002000C;
-pub val MOUSE_PASSTHROUGH: i32 = 0x0002000D;
-pub val POSITION_X: i32 = 0x0002000E;
-pub val POSITION_Y: i32 = 0x0002000F;
+pub val HOVERED:                 i32 = 0x0002000B;
+pub val FOCUS_ON_SHOW:           i32 = 0x0002000C;
+pub val MOUSE_PASSTHROUGH:       i32 = 0x0002000D;
+pub val POSITION_X:              i32 = 0x0002000E;
+pub val POSITION_Y:              i32 = 0x0002000F;
 
 # framebuffer hints
-pub val RED_BITS: i32 = 0x00021001;
-pub val GREEN_BITS: i32 = 0x00021002;
-pub val BLUE_BITS: i32 = 0x00021003;
-pub val ALPHA_BITS: i32 = 0x00021004;
-pub val DEPTH_BITS: i32 = 0x00021005;
-pub val STENCIL_BITS: i32 = 0x00021006;
-pub val ACCUM_RED_BITS: i32 = 0x00021007;
+pub val RED_BITS:         i32 = 0x00021001;
+pub val GREEN_BITS:       i32 = 0x00021002;
+pub val BLUE_BITS:        i32 = 0x00021003;
+pub val ALPHA_BITS:       i32 = 0x00021004;
+pub val DEPTH_BITS:       i32 = 0x00021005;
+pub val STENCIL_BITS:     i32 = 0x00021006;
+pub val ACCUM_RED_BITS:   i32 = 0x00021007;
 pub val ACCUM_GREEN_BITS: i32 = 0x00021008;
-pub val ACCUM_BLUE_BITS: i32 = 0x00021009;
+pub val ACCUM_BLUE_BITS:  i32 = 0x00021009;
 pub val ACCUM_ALPHA_BITS: i32 = 0x0002100A;
-pub val AUX_BUFFERS: i32 = 0x0002100B;
-pub val STEREO: i32 = 0x0002100C;
-pub val SAMPLES: i32 = 0x0002100D;
-pub val SRGB_CAPABLE: i32 = 0x0002100E;
-pub val REFRESH_RATE: i32 = 0x0002100F;
-pub val DOUBLEBUFFER: i32 = 0x00021010;
+pub val AUX_BUFFERS:      i32 = 0x0002100B;
+pub val STEREO:           i32 = 0x0002100C;
+pub val SAMPLES:          i32 = 0x0002100D;
+pub val SRGB_CAPABLE:     i32 = 0x0002100E;
+pub val REFRESH_RATE:     i32 = 0x0002100F;
+pub val DOUBLEBUFFER:     i32 = 0x00021010;
 
 # context hints
-pub val CLIENT_API: i32 = 0x00022001;
-pub val CONTEXT_VERSION_MAJOR: i32 = 0x00022002;
-pub val CONTEXT_VERSION_MINOR: i32 = 0x00022003;
-pub val CONTEXT_REVISION: i32 = 0x00022004;
-pub val CONTEXT_ROBUSTNESS: i32 = 0x00022005;
-pub val OPENGL_FORWARD_COMPAT: i32 = 0x00022006;
-pub val CONTEXT_DEBUG: i32 = 0x00022007;
-pub val OPENGL_DEBUG_CONTEXT: i32 = CONTEXT_DEBUG;
-pub val OPENGL_PROFILE: i32 = 0x00022008;
+pub val CLIENT_API:               i32 = 0x00022001;
+pub val CONTEXT_VERSION_MAJOR:    i32 = 0x00022002;
+pub val CONTEXT_VERSION_MINOR:    i32 = 0x00022003;
+pub val CONTEXT_REVISION:         i32 = 0x00022004;
+pub val CONTEXT_ROBUSTNESS:       i32 = 0x00022005;
+pub val OPENGL_FORWARD_COMPAT:    i32 = 0x00022006;
+pub val CONTEXT_DEBUG:            i32 = 0x00022007;
+pub val OPENGL_DEBUG_CONTEXT:     i32 = CONTEXT_DEBUG;
+pub val OPENGL_PROFILE:           i32 = 0x00022008;
 pub val CONTEXT_RELEASE_BEHAVIOR: i32 = 0x00022009;
-pub val CONTEXT_NO_ERROR: i32 = 0x0002200A;
-pub val CONTEXT_CREATION_API: i32 = 0x0002200B;
-pub val SCALE_TO_MONITOR: i32 = 0x0002200C;
-pub val SCALE_FRAMEBUFFER: i32 = 0x0002200D;
+pub val CONTEXT_NO_ERROR:         i32 = 0x0002200A;
+pub val CONTEXT_CREATION_API:     i32 = 0x0002200B;
+pub val SCALE_TO_MONITOR:         i32 = 0x0002200C;
+pub val SCALE_FRAMEBUFFER:        i32 = 0x0002200D;
 
 # platform-specific window hints
 pub val COCOA_RETINA_FRAMEBUFFER: i32 = 0x00023001;
-pub val COCOA_FRAME_NAME: i32 = 0x00023002;
+pub val COCOA_FRAME_NAME:         i32 = 0x00023002;
 pub val COCOA_GRAPHICS_SWITCHING: i32 = 0x00023003;
-pub val X11_CLASS_NAME: i32 = 0x00024001;
-pub val X11_INSTANCE_NAME: i32 = 0x00024002;
-pub val WIN32_KEYBOARD_MENU: i32 = 0x00025001;
-pub val WIN32_SHOWDEFAULT: i32 = 0x00025002;
-pub val WAYLAND_APP_ID: i32 = 0x00026001;
+pub val X11_CLASS_NAME:           i32 = 0x00024001;
+pub val X11_INSTANCE_NAME:        i32 = 0x00024002;
+pub val WIN32_KEYBOARD_MENU:      i32 = 0x00025001;
+pub val WIN32_SHOWDEFAULT:        i32 = 0x00025002;
+pub val WAYLAND_APP_ID:           i32 = 0x00026001;
 
 # generic values
-pub val TRUE: i32 = 1;
-pub val FALSE: i32 = 0;
+pub val TRUE:      i32 = 1;
+pub val FALSE:     i32 = 0;
 pub val DONT_CARE: i32 = -1;
 # 0x80000000 as an i32 bit pattern, for POSITION_X/POSITION_Y
 pub val ANY_POSITION: i32 = -2147483648;
 
 # client api values
-pub val NO_API: i32 = 0;
-pub val OPENGL_API: i32 = 0x00030001;
+pub val NO_API:        i32 = 0;
+pub val OPENGL_API:    i32 = 0x00030001;
 pub val OPENGL_ES_API: i32 = 0x00030002;
 
 # context robustness values
-pub val NO_ROBUSTNESS: i32 = 0;
+pub val NO_ROBUSTNESS:         i32 = 0;
 pub val NO_RESET_NOTIFICATION: i32 = 0x00031001;
 pub val LOSE_CONTEXT_ON_RESET: i32 = 0x00031002;
 
 # opengl profile values
-pub val OPENGL_ANY_PROFILE: i32 = 0;
-pub val OPENGL_CORE_PROFILE: i32 = 0x00032001;
+pub val OPENGL_ANY_PROFILE:    i32 = 0;
+pub val OPENGL_CORE_PROFILE:   i32 = 0x00032001;
 pub val OPENGL_COMPAT_PROFILE: i32 = 0x00032002;
 
 # context release behavior values
-pub val ANY_RELEASE_BEHAVIOR: i32 = 0;
+pub val ANY_RELEASE_BEHAVIOR:   i32 = 0;
 pub val RELEASE_BEHAVIOR_FLUSH: i32 = 0x00035001;
-pub val RELEASE_BEHAVIOR_NONE: i32 = 0x00035002;
+pub val RELEASE_BEHAVIOR_NONE:  i32 = 0x00035002;
 
 # context creation api values
 pub val NATIVE_CONTEXT_API: i32 = 0x00036001;
-pub val EGL_CONTEXT_API: i32 = 0x00036002;
+pub val EGL_CONTEXT_API:    i32 = 0x00036002;
 pub val OSMESA_CONTEXT_API: i32 = 0x00036003;
 
 # angle platform type values
-pub val ANGLE_PLATFORM_TYPE_NONE: i32 = 0x00037001;
-pub val ANGLE_PLATFORM_TYPE_OPENGL: i32 = 0x00037002;
+pub val ANGLE_PLATFORM_TYPE_NONE:     i32 = 0x00037001;
+pub val ANGLE_PLATFORM_TYPE_OPENGL:   i32 = 0x00037002;
 pub val ANGLE_PLATFORM_TYPE_OPENGLES: i32 = 0x00037003;
-pub val ANGLE_PLATFORM_TYPE_D3D9: i32 = 0x00037004;
-pub val ANGLE_PLATFORM_TYPE_D3D11: i32 = 0x00037005;
-pub val ANGLE_PLATFORM_TYPE_VULKAN: i32 = 0x00037007;
-pub val ANGLE_PLATFORM_TYPE_METAL: i32 = 0x00037008;
+pub val ANGLE_PLATFORM_TYPE_D3D9:     i32 = 0x00037004;
+pub val ANGLE_PLATFORM_TYPE_D3D11:    i32 = 0x00037005;
+pub val ANGLE_PLATFORM_TYPE_VULKAN:   i32 = 0x00037007;
+pub val ANGLE_PLATFORM_TYPE_METAL:    i32 = 0x00037008;
 
 # wayland libdecor values
-pub val WAYLAND_PREFER_LIBDECOR: i32 = 0x00038001;
+pub val WAYLAND_PREFER_LIBDECOR:  i32 = 0x00038001;
 pub val WAYLAND_DISABLE_LIBDECOR: i32 = 0x00038002;
 
 # platform values
-pub val ANY_PLATFORM: i32 = 0x00060000;
-pub val PLATFORM_WIN32: i32 = 0x00060001;
-pub val PLATFORM_COCOA: i32 = 0x00060002;
+pub val ANY_PLATFORM:     i32 = 0x00060000;
+pub val PLATFORM_WIN32:   i32 = 0x00060001;
+pub val PLATFORM_COCOA:   i32 = 0x00060002;
 pub val PLATFORM_WAYLAND: i32 = 0x00060003;
-pub val PLATFORM_X11: i32 = 0x00060004;
-pub val PLATFORM_NULL: i32 = 0x00060005;
+pub val PLATFORM_X11:     i32 = 0x00060004;
+pub val PLATFORM_NULL:    i32 = 0x00060005;
