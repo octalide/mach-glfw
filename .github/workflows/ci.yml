@@ -60,7 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           mach build .
-          test -x out/linux/bin/glfw || { echo "::error::mach build . produced no binary"; exit 1; }
+          test -x out/linux-x86_64/debug/bin/glfw || { echo "::error::mach build . produced no binary"; exit 1; }
 
   test-suite:
     name: Test Suite

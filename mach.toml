@@ -1,43 +1,75 @@
 [project]
-id      = "glfw"
-version = "0.2.1"
-module  = "glfw.mach"
-target  = "native"
-src     = "src"
-dep     = "dep"
-out     = "out/{target}/bin/{name}{ext}"
-obj     = "out/{target}/obj"
+id = "glfw"
+name = "Mach GLFW bindings"
+description = "Mach GLFW bindings and windowing"
+version = "0.3.0"
+src = "src"
+out = "out/{target.name}/{profile.name}"
 
-[target.linux]
-isa  = "x86_64"
-os   = "linux"
-abi  = "sysv64"
+[target.linux-x86_64]
+isa = "x86_64"
+os  = "linux"
+abi = "sysv64"
 
 [target.windows]
-isa  = "x86_64"
-os   = "windows"
-abi  = "win64"
-ext  = ".exe"
-# declared intent: the windows toolchain is not yet validated end-to-end
+isa = "x86_64"
+os  = "windows"
+abi = "win64"
 
 [target.darwin]
-isa  = "x86_64"
-os   = "darwin"
-abi  = "sysv64"
+isa = "x86_64"
+os  = "darwin"
+abi = "sysv64"
 
-[os.linux]
-libs = ["glfw"]
+[profile.debug]
+opt = 0
 
-[os.windows]
-libs = ["glfw3.dll"]
+[profile.release]
+opt = 2
 
-[os.darwin]
-# declared intent: Mach-O dynamic imports are not yet implemented in mach
-libs = ["glfw"]
-
-[bin.glfw]
+[artifact.glfw]
+kind = "bin"
 entry = "main.mach"
+out = "bin/glfw"
+targets = ["*"]
+link = ["glfw", "glfw-win", "Cocoa", "IOKit", "CoreVideo", "OpenGL"]
 
-[deps.mach-std]
+[link.glfw]
+source = "system"
+name = "glfw"
+os = ["linux", "darwin"]
+export = true
+
+[link.glfw-win]
+source = "system"
+name = "glfw3.dll"
+os = ["windows"]
+export = true
+
+[link.Cocoa]
+source = "framework"
+name = "Cocoa"
+os = ["darwin"]
+export = true
+
+[link.IOKit]
+source = "framework"
+name = "IOKit"
+os = ["darwin"]
+export = true
+
+[link.CoreVideo]
+source = "framework"
+name = "CoreVideo"
+os = ["darwin"]
+export = true
+
+[link.OpenGL]
+source = "framework"
+name = "OpenGL"
+os = ["darwin"]
+export = true
+
+[dep.mach-std]
 git = "https://github.com/briar-systems/mach-std"
 ref = "branch/main"
