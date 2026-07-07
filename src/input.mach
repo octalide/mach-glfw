@@ -1,4 +1,4 @@
-# glfw.input: keyboard, mouse, cursor, clipboard, joystick, and gamepad.
+# keyboard, mouse, cursor, clipboard, joystick, and gamepad
 #
 # per-window input state and callbacks, cursor objects, and the
 # joystick/gamepad API. key and button constants live in glfw.key,
@@ -22,21 +22,21 @@ pub val CURSOR_HIDDEN:   i32 = 0x00034002;
 pub val CURSOR_DISABLED: i32 = 0x00034003;
 pub val CURSOR_CAPTURED: i32 = 0x00034004;
 
-# Cursor: handle to a cursor image.
+# handle to a cursor image
 # ---
 # handle: opaque GLFWcursor pointer, nil when invalid
 pub rec Cursor {
     handle: ptr;
 }
 
-# no_cursor: the nil Cursor, for restoring the default cursor.
+# the nil Cursor, for restoring the default cursor
 # ---
 # ret: a Cursor with a nil handle
 pub fun no_cursor() Cursor {
     ret Cursor{ handle: nil };
 }
 
-# cursor_is_valid: whether a Cursor holds a live handle.
+# whether a Cursor holds a live handle
 # ---
 # cursor: cursor to test
 # ret:    true if the handle is non-nil
@@ -44,27 +44,27 @@ pub fun cursor_is_valid(cursor: Cursor) bool {
     ret cursor.handle != nil;
 }
 
-# KeyFun: key callback (window, key, scancode, action, mods).
+# key callback (window, key, scancode, action, mods)
 pub def KeyFun: fun(ptr, i32, i32, i32, i32);
-# CharFun: text input callback (window, codepoint).
+# text input callback (window, codepoint)
 pub def CharFun: fun(ptr, u32);
-# CharModsFun: text input with modifiers callback (window, codepoint, mods).
+# text input with modifiers callback (window, codepoint, mods)
 pub def CharModsFun: fun(ptr, u32, i32);
-# MouseButtonFun: mouse button callback (window, button, action, mods).
+# mouse button callback (window, button, action, mods)
 pub def MouseButtonFun: fun(ptr, i32, i32, i32);
-# CursorPosFun: cursor position callback (window, xpos, ypos).
+# cursor position callback (window, xpos, ypos)
 pub def CursorPosFun: fun(ptr, f64, f64);
-# CursorEnterFun: cursor enter/leave callback (window, entered).
+# cursor enter/leave callback (window, entered)
 pub def CursorEnterFun: fun(ptr, i32);
-# ScrollFun: scroll callback (window, xoffset, yoffset).
+# scroll callback (window, xoffset, yoffset)
 pub def ScrollFun: fun(ptr, f64, f64);
-# DropFun: path drop callback (window, count, paths).
+# path drop callback (window, count, paths)
 pub def DropFun: fun(ptr, i32, **u8);
-# JoystickFun: joystick configuration callback (jid, core.CONNECTED or
-# core.DISCONNECTED).
+# joystick configuration callback (jid, core.CONNECTED or
+# core.DISCONNECTED)
 pub def JoystickFun: fun(i32, i32);
 
-# get_input_mode: read an input mode of the window.
+# read an input mode of the window
 # ---
 # window: window to query
 # mode:   input mode id
@@ -73,7 +73,7 @@ pub fun get_input_mode(window: Window, mode: i32) i32 {
     ret c.glfwGetInputMode(window.handle, mode);
 }
 
-# set_input_mode: set an input mode of the window.
+# set an input mode of the window
 # ---
 # window: window to change
 # mode:   input mode id
@@ -82,14 +82,14 @@ pub fun set_input_mode(window: Window, mode: i32, value: i32) {
     c.glfwSetInputMode(window.handle, mode, value);
 }
 
-# raw_mouse_motion_supported: whether raw mouse motion is available.
+# whether raw mouse motion is available
 # ---
 # ret: true if the RAW_MOUSE_MOTION input mode works
 pub fun raw_mouse_motion_supported() bool {
     ret c.glfwRawMouseMotionSupported() != 0;
 }
 
-# get_key_name: printable name of a key.
+# printable name of a key
 # ---
 # key:      a key.KEY_* token, or KEY_UNKNOWN to use the scancode
 # scancode: platform scancode, ignored unless key is KEY_UNKNOWN
@@ -98,7 +98,7 @@ pub fun get_key_name(key: i32, scancode: i32) str {
     ret c.glfwGetKeyName(key, scancode);
 }
 
-# get_key_scancode: platform scancode of a key.
+# platform scancode of a key
 # ---
 # key: a key.KEY_* token
 # ret: scancode, or -1 on error
@@ -106,7 +106,7 @@ pub fun get_key_scancode(key: i32) i32 {
     ret c.glfwGetKeyScancode(key);
 }
 
-# get_key: last reported state of a key.
+# last reported state of a key
 # ---
 # window: window to query
 # key:    a key.KEY_* token
@@ -115,7 +115,7 @@ pub fun get_key(window: Window, key: i32) i32 {
     ret c.glfwGetKey(window.handle, key);
 }
 
-# get_mouse_button: last reported state of a mouse button.
+# last reported state of a mouse button
 # ---
 # window: window to query
 # button: a mouse.MOUSE_BUTTON_* token
@@ -124,7 +124,7 @@ pub fun get_mouse_button(window: Window, button: i32) i32 {
     ret c.glfwGetMouseButton(window.handle, button);
 }
 
-# get_cursor_pos: cursor position relative to the client area.
+# cursor position relative to the client area
 # ---
 # window: window to query
 # xpos:   receives the x position
@@ -133,7 +133,7 @@ pub fun get_cursor_pos(window: Window, xpos: *f64, ypos: *f64) {
     c.glfwGetCursorPos(window.handle, xpos, ypos);
 }
 
-# set_cursor_pos: move the cursor within the focused window.
+# move the cursor within the focused window
 # ---
 # window: window owning the cursor
 # xpos:   new x position
@@ -142,7 +142,7 @@ pub fun set_cursor_pos(window: Window, xpos: f64, ypos: f64) {
     c.glfwSetCursorPos(window.handle, xpos, ypos);
 }
 
-# create_cursor: create a custom cursor from an image.
+# create a custom cursor from an image
 # ---
 # image: cursor image
 # xhot:  hotspot x, in pixels from the left
@@ -152,7 +152,7 @@ pub fun create_cursor(image: *c.Image, xhot: i32, yhot: i32) Cursor {
     ret Cursor{ handle: c.glfwCreateCursor(image, xhot, yhot) };
 }
 
-# create_standard_cursor: create a themed standard cursor.
+# create a themed standard cursor
 # ---
 # shape: a mouse.*_CURSOR shape token
 # ret:   the new Cursor; nil handle on failure
@@ -160,15 +160,15 @@ pub fun create_standard_cursor(shape: i32) Cursor {
     ret Cursor{ handle: c.glfwCreateStandardCursor(shape) };
 }
 
-# destroy_cursor: destroy a cursor created with create_cursor or
-# create_standard_cursor.
+# destroy a cursor created with create_cursor or
+# create_standard_cursor
 # ---
 # cursor: cursor to destroy
 pub fun destroy_cursor(cursor: Cursor) {
     c.glfwDestroyCursor(cursor.handle);
 }
 
-# set_cursor: set the cursor image shown over the window's client area.
+# set the cursor image shown over the window's client area
 # ---
 # window: window to change
 # cursor: cursor to show, or no_cursor() for the default
@@ -176,7 +176,7 @@ pub fun set_cursor(window: Window, cursor: Cursor) {
     c.glfwSetCursor(window.handle, cursor.handle);
 }
 
-# set_key_callback: install the key callback.
+# install the key callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -184,7 +184,7 @@ pub fun set_key_callback(window: Window, callback: KeyFun) {
     c.glfwSetKeyCallback(window.handle, callback);
 }
 
-# set_char_callback: install the text input callback.
+# install the text input callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -192,7 +192,7 @@ pub fun set_char_callback(window: Window, callback: CharFun) {
     c.glfwSetCharCallback(window.handle, callback);
 }
 
-# set_char_mods_callback: install the text-with-modifiers callback.
+# install the text-with-modifiers callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -200,7 +200,7 @@ pub fun set_char_mods_callback(window: Window, callback: CharModsFun) {
     c.glfwSetCharModsCallback(window.handle, callback);
 }
 
-# set_mouse_button_callback: install the mouse button callback.
+# install the mouse button callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -208,7 +208,7 @@ pub fun set_mouse_button_callback(window: Window, callback: MouseButtonFun) {
     c.glfwSetMouseButtonCallback(window.handle, callback);
 }
 
-# set_cursor_pos_callback: install the cursor position callback.
+# install the cursor position callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -216,7 +216,7 @@ pub fun set_cursor_pos_callback(window: Window, callback: CursorPosFun) {
     c.glfwSetCursorPosCallback(window.handle, callback);
 }
 
-# set_cursor_enter_callback: install the cursor enter/leave callback.
+# install the cursor enter/leave callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -224,7 +224,7 @@ pub fun set_cursor_enter_callback(window: Window, callback: CursorEnterFun) {
     c.glfwSetCursorEnterCallback(window.handle, callback);
 }
 
-# set_scroll_callback: install the scroll callback.
+# install the scroll callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -232,7 +232,7 @@ pub fun set_scroll_callback(window: Window, callback: ScrollFun) {
     c.glfwSetScrollCallback(window.handle, callback);
 }
 
-# set_drop_callback: install the path drop callback.
+# install the path drop callback
 # ---
 # window:   window to observe
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
@@ -240,7 +240,7 @@ pub fun set_drop_callback(window: Window, callback: DropFun) {
     c.glfwSetDropCallback(window.handle, callback);
 }
 
-# set_clipboard_string: set the system clipboard text.
+# set the system clipboard text
 # ---
 # window: deprecated, any valid window or no_window()
 # string: UTF-8 text, copied before return
@@ -248,7 +248,7 @@ pub fun set_clipboard_string(window: Window, string: str) {
     c.glfwSetClipboardString(window.handle, string);
 }
 
-# get_clipboard_string: read the system clipboard text.
+# read the system clipboard text
 # ---
 # window: deprecated, any valid window or no_window()
 # ret:    GLFW-owned string, nil if unavailable
@@ -256,7 +256,7 @@ pub fun get_clipboard_string(window: Window) str {
     ret c.glfwGetClipboardString(window.handle);
 }
 
-# joystick_present: whether a joystick is connected.
+# whether a joystick is connected
 # ---
 # jid: a joystick.JOYSTICK_* id
 # ret: true if present
@@ -264,7 +264,7 @@ pub fun joystick_present(jid: i32) bool {
     ret c.glfwJoystickPresent(jid) != 0;
 }
 
-# get_joystick_axes: axis values of a joystick, each -1 to 1.
+# axis values of a joystick, each -1 to 1
 # ---
 # jid:   a joystick.JOYSTICK_* id
 # count: receives the axis count
@@ -273,7 +273,7 @@ pub fun get_joystick_axes(jid: i32, count: *i32) *f32 {
     ret c.glfwGetJoystickAxes(jid, count);
 }
 
-# get_joystick_buttons: button states of a joystick.
+# button states of a joystick
 # ---
 # jid:   a joystick.JOYSTICK_* id
 # count: receives the button count
@@ -282,7 +282,7 @@ pub fun get_joystick_buttons(jid: i32, count: *i32) *u8 {
     ret c.glfwGetJoystickButtons(jid, count);
 }
 
-# get_joystick_hats: hat states of a joystick.
+# hat states of a joystick
 # ---
 # jid:   a joystick.JOYSTICK_* id
 # count: receives the hat count
@@ -291,7 +291,7 @@ pub fun get_joystick_hats(jid: i32, count: *i32) *u8 {
     ret c.glfwGetJoystickHats(jid, count);
 }
 
-# get_joystick_name: human-readable joystick name.
+# human-readable joystick name
 # ---
 # jid: a joystick.JOYSTICK_* id
 # ret: GLFW-owned string, nil if absent
@@ -299,7 +299,7 @@ pub fun get_joystick_name(jid: i32) str {
     ret c.glfwGetJoystickName(jid);
 }
 
-# get_joystick_guid: SDL-compatible joystick GUID.
+# SDL-compatible joystick GUID
 # ---
 # jid: a joystick.JOYSTICK_* id
 # ret: GLFW-owned string, nil if absent
@@ -307,7 +307,7 @@ pub fun get_joystick_guid(jid: i32) str {
     ret c.glfwGetJoystickGUID(jid);
 }
 
-# set_joystick_user_pointer: attach a user pointer to the joystick slot.
+# attach a user pointer to the joystick slot
 # ---
 # jid:     a joystick.JOYSTICK_* id
 # pointer: arbitrary user data
@@ -315,7 +315,7 @@ pub fun set_joystick_user_pointer(jid: i32, pointer: ptr) {
     c.glfwSetJoystickUserPointer(jid, pointer);
 }
 
-# get_joystick_user_pointer: read the joystick slot's user pointer.
+# read the joystick slot's user pointer
 # ---
 # jid: a joystick.JOYSTICK_* id
 # ret: the user pointer, nil if unset
@@ -323,7 +323,7 @@ pub fun get_joystick_user_pointer(jid: i32) ptr {
     ret c.glfwGetJoystickUserPointer(jid);
 }
 
-# joystick_is_gamepad: whether the joystick has a gamepad mapping.
+# whether the joystick has a gamepad mapping
 # ---
 # jid: a joystick.JOYSTICK_* id
 # ret: true if a mapping exists
@@ -331,14 +331,14 @@ pub fun joystick_is_gamepad(jid: i32) bool {
     ret c.glfwJoystickIsGamepad(jid) != 0;
 }
 
-# set_joystick_callback: install the joystick configuration callback.
+# install the joystick configuration callback
 # ---
 # callback: handler, or nil cast to the callback type (e.g. nil::KeyFun) to clear
 pub fun set_joystick_callback(callback: JoystickFun) {
     c.glfwSetJoystickCallback(callback);
 }
 
-# update_gamepad_mappings: add SDL_GameControllerDB mappings.
+# add SDL_GameControllerDB mappings
 # ---
 # string: mapping lines in SDL format
 # ret:    true on success
@@ -346,7 +346,7 @@ pub fun update_gamepad_mappings(string: str) bool {
     ret c.glfwUpdateGamepadMappings(string) != 0;
 }
 
-# get_gamepad_name: human-readable gamepad name from the mapping.
+# human-readable gamepad name from the mapping
 # ---
 # jid: a joystick.JOYSTICK_* id
 # ret: GLFW-owned string, nil if not a gamepad
@@ -354,7 +354,7 @@ pub fun get_gamepad_name(jid: i32) str {
     ret c.glfwGetGamepadName(jid);
 }
 
-# get_gamepad_state: read the joystick through its gamepad mapping.
+# read the joystick through its gamepad mapping
 # ---
 # jid:   a joystick.JOYSTICK_* id
 # state: receives the mapped state

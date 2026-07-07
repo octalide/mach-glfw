@@ -25,7 +25,7 @@ do not need to redeclare `libs = ["glfw"]`:
 
 ```toml
 [deps.mach-glfw]
-git = "https://github.com/octalide/mach-glfw"
+git = "https://github.com/briar-systems/mach-glfw"
 ref = "branch/main"
 ```
 
