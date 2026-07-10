@@ -1,7 +1,5 @@
 [project]
 id = "glfw"
-name = "Mach GLFW bindings"
-description = "Mach GLFW bindings and windowing"
 version = "0.3.0"
 src = "src"
 out = "out/{target.name}/{profile.name}"
@@ -23,9 +21,11 @@ abi = "sysv64"
 
 [profile.debug]
 opt = 0
+debug = true
 
 [profile.release]
 opt = 2
+debug = false
 
 [artifact.glfw]
 kind = "bin"
@@ -33,41 +33,54 @@ entry = "main.mach"
 out = "bin/glfw"
 targets = ["*"]
 link = ["glfw", "glfw-win", "Cocoa", "IOKit", "CoreVideo", "OpenGL"]
+need = []
 
 [link.glfw]
 source = "system"
 name = "glfw"
 os = ["linux", "darwin"]
+isa = "*"
+abi = "*"
 export = true
 
 [link.glfw-win]
 source = "system"
 name = "glfw3.dll"
 os = ["windows"]
+isa = "*"
+abi = "*"
 export = true
 
 [link.Cocoa]
 source = "framework"
 name = "Cocoa"
 os = ["darwin"]
+isa = "*"
+abi = "*"
 export = true
 
 [link.IOKit]
 source = "framework"
 name = "IOKit"
 os = ["darwin"]
+isa = "*"
+abi = "*"
 export = true
 
 [link.CoreVideo]
 source = "framework"
 name = "CoreVideo"
 os = ["darwin"]
+isa = "*"
+abi = "*"
 export = true
 
 [link.OpenGL]
 source = "framework"
 name = "OpenGL"
 os = ["darwin"]
+isa = "*"
+abi = "*"
 export = true
 
 [dep.mach-std]
