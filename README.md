@@ -173,8 +173,9 @@ smaller dependency surfaces.
 The bindings call the **system** GLFW. Every raw import uses
 `#[library("glfw")]`, where `glfw` is the stable logical dependency name rather
 than a platform filename. The manifest maps it to the selected target's
-concrete dependency: the resolved `libglfw.so` SONAME on Linux, `glfw3.dll` on
-Windows, or the resolved dylib's `LC_ID_DYLIB` install name on Darwin.
+concrete dependency: the resolved ELF SONAME (for example `libglfw.so.3`) on
+Linux, `glfw3.dll` on Windows, or the resolved dylib's `LC_ID_DYLIB` install
+name on Darwin.
 
 GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
 …). GLFW itself is intentionally not vendored.
