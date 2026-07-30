@@ -69,9 +69,11 @@ src/
 ### Raw layer — `glfw.c`
 
 One file mirroring `glfw3.h` declaration order. Every GLFW function is a
-`pub ext fun` with its C name and C-faithful types:
+`pub ext fun` attributed to the stable logical library name `glfw`, with its
+C name and C-faithful types:
 
 ```mach
+#[library("glfw")]
 pub ext fun glfwCreateWindow(width: i32, height: i32, title: *u8, monitor: ptr, share: ptr) ptr;
 ```
 
@@ -168,8 +170,12 @@ smaller dependency surfaces.
 
 ### Requirements and vendoring
 
-The bindings call the **system** GLFW: `libs = ["glfw"]` resolves to
-`libglfw.so` and binds the `ext fun` symbols dynamically at load time.
+The bindings call the **system** GLFW. Every raw import uses
+`#[library("glfw")]`, where `glfw` is the stable logical dependency name rather
+than a platform filename. The manifest maps it to the selected target's
+concrete dependency: the resolved `libglfw.so` SONAME on Linux, `glfw3.dll` on
+Windows, or the resolved dylib's `LC_ID_DYLIB` install name on Darwin.
+
 GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
 …). GLFW itself is intentionally not vendored.
 

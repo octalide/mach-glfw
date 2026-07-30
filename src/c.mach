@@ -1,9 +1,10 @@
 # raw C-ABI imports of GLFW 3.4
 #
-# every GLFW function is a pub ext fun with its C name and C-faithful types,
-# in glfw3.h declaration order. opaque handles (GLFWwindow*, GLFWmonitor*,
-# GLFWcursor*) are ptr; transparent structs are recs with identical layout.
-# Vulkan functions and glfwInitAllocator are excluded (deferred).
+# every GLFW function is a pub ext fun attributed to the stable logical library
+# name `glfw`, with its C name and C-faithful types, in glfw3.h declaration
+# order. opaque handles (GLFWwindow*, GLFWmonitor*, GLFWcursor*) are ptr;
+# transparent structs are recs with identical layout. Vulkan functions and
+# glfwInitAllocator are excluded (deferred).
 
 # video mode of a monitor (GLFWvidmode), C-identical layout
 pub rec Vidmode {
