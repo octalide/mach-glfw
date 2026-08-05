@@ -8,108 +8,179 @@ permissions:
   contents: read
 
 env:
-  GLFW_VERSION: "3.4"
+  MACH_REF: a52d59ac984b813385df81940e92722fd2a13aaa
+  ZIG_VERSION: "0.16.0"
 
 jobs:
-  full-build:
-    name: Full Build
+  linux:
+    name: Linux static
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - name: Fetch released mach
+      - name: Install build and runtime dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y llvm xauth xorg-dev xvfb libwayland-bin libwayland-dev libxkbcommon-dev wayland-protocols
+
+      - name: Build current Mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p /tmp/machdl
+          mkdir -p "$RUNNER_TEMP/mach-release" "$RUNNER_TEMP/bin"
           gh release download -R briar-systems/mach \
-            -p 'mach-*-x86_64-linux.tar.gz' -D /tmp/machdl --clobber
-          tar -xzf /tmp/machdl/mach-*-x86_64-linux.tar.gz -C /tmp/machdl
-          install -m 0755 /tmp/machdl/mach /usr/local/bin/mach
-          mach info
+            -p 'mach-*-x86_64-linux.tar.gz' -D "$RUNNER_TEMP/mach-release" --clobber
+          tar -xzf "$RUNNER_TEMP"/mach-release/mach-*-x86_64-linux.tar.gz -C "$RUNNER_TEMP/mach-release"
+          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bootstrap-mach"
+          git init "$RUNNER_TEMP/mach-src"
+          git -C "$RUNNER_TEMP/mach-src" remote add origin https://github.com/briar-systems/mach.git
+          git -C "$RUNNER_TEMP/mach-src" fetch --depth 1 origin "$MACH_REF"
+          git -C "$RUNNER_TEMP/mach-src" checkout --detach FETCH_HEAD
+          cd "$RUNNER_TEMP/mach-src"
+          "$RUNNER_TEMP/bootstrap-mach" dep pull
+          "$RUNNER_TEMP/bootstrap-mach" build . --profile release
+          install -m 0755 out/linux-x86_64/release/bin/mach "$RUNNER_TEMP/bin/mach"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
-      - name: Cache GLFW
-        id: cache-glfw
-        uses: actions/cache@v5
-        with:
-          path: ~/glfw-install
-          key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
-
-      - name: Build GLFW
-        if: steps.cache-glfw.outputs.cache-hit != 'true'
+      - name: Build and test vendored GLFW
         run: |
           set -euo pipefail
-          # ubuntu's libglfw3-dev is 3.3; the bindings target 3.4
-          sudo apt-get update
-          sudo apt-get install -y cmake xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
-          curl -sL "https://github.com/glfw/glfw/archive/refs/tags/$GLFW_VERSION.tar.gz" | tar xz
-          cmake -S "glfw-$GLFW_VERSION" -B glfw-build -DBUILD_SHARED_LIBS=ON \
-            -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF \
-            -DCMAKE_INSTALL_PREFIX="$HOME/glfw-install"
-          cmake --build glfw-build --parallel
-          cmake --install glfw-build
+          mach dep pull
+          tools/surface.sh check
+          mach build . --target linux-x86_64 --profile debug
+          mach build . --target linux-x86_64 --profile release
+          mach test . --target linux-x86_64 --profile debug
+          mach test . --target linux-x86_64 --profile release
 
-      - name: Install GLFW
-        run: sudo cp -P ~/glfw-install/lib/libglfw.so* /usr/lib/ && sudo ldconfig
-
-      - name: Sync dependencies
-        run: mach dep pull
-
-      - name: Build
+      - name: Verify self-contained runtime
         run: |
           set -euo pipefail
-          mach build .
-          test -x out/linux-x86_64/debug/bin/glfw || { echo "::error::mach build . produced no binary"; exit 1; }
+          for profile in debug release; do
+            exe="out/linux-x86_64/$profile/bin/glfw"
+            archive="out/linux-x86_64/$profile/vendor/glfw/libglfw.a"
+            ldd "$exe" > "$RUNNER_TEMP/glfw-$profile.ldd"
+            if grep -qi glfw "$RUNNER_TEMP/glfw-$profile.ldd"; then
+              echo "::error::$exe retains a dynamic GLFW dependency"
+              exit 1
+            fi
+            llvm-nm --defined-only "$archive" > "$RUNNER_TEMP/glfw-$profile.nm"
+            grep -q ' T glfwInit$' "$RUNNER_TEMP/glfw-$profile.nm"
+            xvfb-run -a "$exe" --smoke | tee "$RUNNER_TEMP/glfw-$profile.log"
+            grep -q '^GLFW 3\.4\.0$' "$RUNNER_TEMP/glfw-$profile.log"
+            grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-$profile.log"
+          done
 
-  test-suite:
-    name: Test Suite
+  windows:
+    name: Windows static cross-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - name: Fetch released mach
+      - name: Install LLVM and Zig
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y llvm xz-utils
+          curl -fsSL "https://ziglang.org/download/$ZIG_VERSION/zig-x86_64-linux-$ZIG_VERSION.tar.xz" \
+            | tar -xJ -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/zig-x86_64-linux-$ZIG_VERSION" >> "$GITHUB_PATH"
+
+      - name: Build current Mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p /tmp/machdl
+          mkdir -p "$RUNNER_TEMP/mach-release" "$RUNNER_TEMP/bin"
           gh release download -R briar-systems/mach \
-            -p 'mach-*-x86_64-linux.tar.gz' -D /tmp/machdl --clobber
-          tar -xzf /tmp/machdl/mach-*-x86_64-linux.tar.gz -C /tmp/machdl
-          install -m 0755 /tmp/machdl/mach /usr/local/bin/mach
-          mach info
+            -p 'mach-*-x86_64-linux.tar.gz' -D "$RUNNER_TEMP/mach-release" --clobber
+          tar -xzf "$RUNNER_TEMP"/mach-release/mach-*-x86_64-linux.tar.gz -C "$RUNNER_TEMP/mach-release"
+          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bootstrap-mach"
+          git init "$RUNNER_TEMP/mach-src"
+          git -C "$RUNNER_TEMP/mach-src" remote add origin https://github.com/briar-systems/mach.git
+          git -C "$RUNNER_TEMP/mach-src" fetch --depth 1 origin "$MACH_REF"
+          git -C "$RUNNER_TEMP/mach-src" checkout --detach FETCH_HEAD
+          cd "$RUNNER_TEMP/mach-src"
+          "$RUNNER_TEMP/bootstrap-mach" dep pull
+          "$RUNNER_TEMP/bootstrap-mach" build . --profile release
+          install -m 0755 out/linux-x86_64/release/bin/mach "$RUNNER_TEMP/bin/mach"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
-      - name: Cache GLFW
-        id: cache-glfw
-        uses: actions/cache@v5
-        with:
-          path: ~/glfw-install
-          key: glfw-${{ env.GLFW_VERSION }}-${{ runner.os }}
-
-      - name: Build GLFW
-        if: steps.cache-glfw.outputs.cache-hit != 'true'
+      - name: Build and inspect vendored GLFW
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y cmake xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
-          curl -sL "https://github.com/glfw/glfw/archive/refs/tags/$GLFW_VERSION.tar.gz" | tar xz
-          cmake -S "glfw-$GLFW_VERSION" -B glfw-build -DBUILD_SHARED_LIBS=ON \
-            -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF \
-            -DCMAKE_INSTALL_PREFIX="$HOME/glfw-install"
-          cmake --build glfw-build --parallel
-          cmake --install glfw-build
+          mach dep pull
+          mach build . --target windows --profile debug
+          mach build . --target windows --profile release
+          tools/check-windows-pe.sh \
+            out/windows/debug/bin/glfw \
+            out/windows/release/bin/glfw
+          for profile in debug release; do
+            llvm-nm --defined-only "out/windows/$profile/vendor/glfw/libglfw.a" \
+              > "$RUNNER_TEMP/glfw-$profile.nm"
+            grep -q ' T glfwInit$' "$RUNNER_TEMP/glfw-$profile.nm"
+          done
 
-      - name: Install GLFW
-        run: sudo cp -P ~/glfw-install/lib/libglfw.so* /usr/lib/ && sudo ldconfig
+  darwin:
+    name: Darwin x86_64 static and dynamic
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v6
 
-      - name: Surface parity
-        run: tools/surface.sh check
-
-      - name: Sync dependencies
-        run: mach dep pull
-
-      - name: Test
+      - name: Build current Mach
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mach test .
+          mkdir -p "$RUNNER_TEMP/mach-release" "$RUNNER_TEMP/bin"
+          gh release download -R briar-systems/mach \
+            -p 'mach-*-x86_64-darwin.tar.gz' -D "$RUNNER_TEMP/mach-release" --clobber
+          tar -xzf "$RUNNER_TEMP"/mach-release/mach-*-x86_64-darwin.tar.gz -C "$RUNNER_TEMP/mach-release"
+          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bootstrap-mach"
+          git init "$RUNNER_TEMP/mach-src"
+          git -C "$RUNNER_TEMP/mach-src" remote add origin https://github.com/briar-systems/mach.git
+          git -C "$RUNNER_TEMP/mach-src" fetch --depth 1 origin "$MACH_REF"
+          git -C "$RUNNER_TEMP/mach-src" checkout --detach FETCH_HEAD
+          cd "$RUNNER_TEMP/mach-src"
+          "$RUNNER_TEMP/bootstrap-mach" dep pull
+          "$RUNNER_TEMP/bootstrap-mach" build . --profile release
+          install -m 0755 out/darwin-x86_64/release/bin/mach "$RUNNER_TEMP/bin/mach"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Build and run vendored static GLFW
+        run: |
+          set -euo pipefail
+          if brew list --versions glfw >/dev/null 2>&1; then
+            brew uninstall --ignore-dependencies glfw
+          fi
+          mach dep pull
+          mach build . --target darwin --profile debug
+          mach build . --target darwin --profile release
+          for profile in debug release; do
+            exe="out/darwin/$profile/bin/glfw"
+            otool -L "$exe" > "$RUNNER_TEMP/glfw-static-$profile.otool"
+            if grep -qi glfw "$RUNNER_TEMP/glfw-static-$profile.otool"; then
+              echo "::error::$exe retains a dynamic GLFW dependency"
+              exit 1
+            fi
+            "$exe" --smoke | tee "$RUNNER_TEMP/glfw-static-$profile.log"
+            grep -q '^GLFW 3\.4\.0$' "$RUNNER_TEMP/glfw-static-$profile.log"
+            grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-static-$profile.log"
+          done
+
+      - name: Build and run system dynamic GLFW
+        run: |
+          set -euo pipefail
+          brew install glfw
+          sed -i.bak 's/    "glfw-static",/    "glfw",/' mach.toml
+          prefix=$(brew --prefix glfw)
+          mach build . --target darwin --profile debug -L "$prefix/lib"
+          mach build . --target darwin --profile release -L "$prefix/lib"
+          for profile in debug release; do
+            exe="out/darwin/$profile/bin/glfw"
+            otool -L "$exe" | grep -E 'libglfw(\.3)?\.dylib'
+            "$exe" --smoke | tee "$RUNNER_TEMP/glfw-system-$profile.log"
+            grep -q '^GLFW 3\.4\.0$' "$RUNNER_TEMP/glfw-system-$profile.log"
+            grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-system-$profile.log"
+          done
