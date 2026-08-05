@@ -192,7 +192,7 @@ Per target:
 |---|---|
 | linux | X11, Wayland and xkbcommon **headers**, plus `wayland-scanner` (`xorg-dev libwayland-dev libwayland-bin libxkbcommon-dev` on Debian/Ubuntu; `libx11 wayland libxkbcommon` on Arch) |
 | windows | `zig`; its mingw-w64 headers and static CRT supply the Win32 declarations and ordinary C runtime routines. `tools/materialize-mingw-runtime.sh` asks that Zig invocation for its target-matched MinGW/compiler runtime archives; the manifest maps GLFW's remaining Win32 and UCRT imports to their DLLs |
-| darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
+| darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. The manifest attributes the Cocoa archive's measured foreign imports to libSystem, libobjc, CoreFoundation, CoreGraphics, IOKit, and Cocoa. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
 
 Both the X11 and Wayland backends are compiled in on linux; `glfwInit` picks
 one at runtime, as a distro build of GLFW does. The X11, Wayland and OpenGL

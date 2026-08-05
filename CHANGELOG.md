@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   across Linux, Windows, and Darwin.
 - link: Materialized Zig's MinGW runtime archives and attributed GLFW's Win32
   and UCRT imports so Windows builds remain self-contained.
+- link: Attributed the vendored Cocoa backend's foreign imports to libSystem,
+  libobjc, and the Darwin frameworks that provide them.
 
 ### Changed
 - manifest: Re-touched to RFC-exact totality per mach#1964/mach#1979.
