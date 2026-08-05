@@ -188,7 +188,7 @@ Per target:
 | Target | Also needs |
 |---|---|
 | linux | X11, Wayland and xkbcommon **headers**, plus `wayland-scanner` (`xorg-dev libwayland-dev libwayland-bin libxkbcommon-dev` on Debian/Ubuntu; `libx11 wayland libxkbcommon` on Arch) |
-| windows | nothing beyond `zig` — the mingw-w64 headers ship with it |
+| windows | `zig`; its mingw-w64 headers supply the Win32 declarations. The manifest maps GLFW's dynamically exported C runtime calls to their UCRT API-set DLLs, while seven routines supplied by the static mingw CRT remain blocked on [mach#2530](https://github.com/briar-systems/mach/issues/2530) |
 | darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
 
 Both the X11 and Wayland backends are compiled in on linux; `glfwInit` picks

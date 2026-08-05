@@ -38,6 +38,8 @@ link = [
     "glfw-static",
     "pthread", "m", "dl", "rt",
     "gdi32", "user32", "shell32", "kernel32",
+    "ucrt-heap", "ucrt-string", "ucrt-convert", "ucrt-utility",
+    "ucrt-math", "ucrt-private",
     "Cocoa", "IOKit", "CoreFoundation", "CoreVideo", "OpenGL",
 ]
 need = []
@@ -102,10 +104,7 @@ isa = "*"
 abi = "*"
 export = true
 
-# the four DLLs GLFW's win32 backend imports directly. the archive also leaves
-# 17 C runtime symbols undefined, which zig's windows-gnu target resolves from
-# the UCRT (api-ms-win-crt-*.dll), not msvcrt.dll; those need per-entry symbol
-# claims that the manifest cannot yet express — see briar-systems/mach#2530.
+# the four DLLs GLFW's win32 backend imports directly
 [link.gdi32]
 source = "system"
 name = "gdi32.dll"
@@ -133,6 +132,65 @@ export = true
 [link.kernel32]
 source = "system"
 name = "kernel32.dll"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+# the dynamic half of GLFW's C runtime surface. the remaining memcpy, memmove,
+# memset, strlen, sprintf, sscanf and vsnprintf need the static mingw CRT.
+[link.ucrt-heap]
+source = "system"
+name = "api-ms-win-crt-heap-l1-1-0.dll"
+symbols = ["malloc", "free", "realloc"]
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.ucrt-string]
+source = "system"
+name = "api-ms-win-crt-string-l1-1-0.dll"
+symbols = [
+    "strcmp", "strcpy", "strcspn", "strncmp", "strncpy",
+    "strspn", "strtok", "wcscmp", "wcscpy",
+]
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.ucrt-convert]
+source = "system"
+name = "api-ms-win-crt-convert-l1-1-0.dll"
+symbols = ["strtol", "strtoul"]
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.ucrt-utility]
+source = "system"
+name = "api-ms-win-crt-utility-l1-1-0.dll"
+symbols = ["qsort"]
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.ucrt-math]
+source = "system"
+name = "api-ms-win-crt-math-l1-1-0.dll"
+symbols = ["powf"]
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.ucrt-private]
+source = "system"
+name = "api-ms-win-crt-private-l1-1-0.dll"
+symbols = ["strstr"]
 os = ["windows"]
 isa = "*"
 abi = "*"
