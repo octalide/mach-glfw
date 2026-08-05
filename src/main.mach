@@ -17,7 +17,7 @@ def GlClearFun: fun(u32);
 val GL_COLOR_BUFFER_BIT: u32 = 0x00004000;
 
 fun on_error(code: i32, desc: *u8) {
-    print.eprintf("glfw error 0x%x: %s\n", code::u64, desc);
+    print.eprintf("glfw error 0x{:x}: {}\n", code::u64, desc);
 }
 
 fun on_key(handle: ptr, key: i32, scancode: i32, action: i32, mods: i32) {
@@ -40,7 +40,7 @@ fun main(argc: i64, argv: **u8) i64 {
     var minor: i32 = 0;
     var rev: i32 = 0;
     glfw.get_version(?major, ?minor, ?rev);
-    print.printf("GLFW %d.%d.%d\n", major::i64, minor::i64, rev::i64);
+    print.printf("GLFW {}.{}.{}\n", major::i64, minor::i64, rev::i64);
 
     val w: glfw.Window = glfw.open_window(800, 600, "mach-glfw");
     if (!glfw.window_is_valid(w)) {
