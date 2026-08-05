@@ -57,6 +57,7 @@ export = true
 [link.glfw]
 source = "system"
 name = "glfw"
+library = "glfw"
 os = ["linux", "darwin"]
 isa = "*"
 abi = "*"
@@ -65,6 +66,7 @@ export = true
 [link.glfw-win]
 source = "system"
 name = "glfw3.dll"
+library = "glfw"
 os = ["windows"]
 isa = "*"
 abi = "*"

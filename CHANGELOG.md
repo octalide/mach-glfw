@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- link: Attributed every raw GLFW import to the stable `glfw` dependency name
+  across Linux, Windows, and Darwin.
+
 ### Changed
 - manifest: Re-touched to RFC-exact totality per mach#1964/mach#1979.
 

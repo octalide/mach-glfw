@@ -70,9 +70,11 @@ src/
 ### Raw layer — `glfw.c`
 
 One file mirroring `glfw3.h` declaration order. Every GLFW function is a
-`pub ext fun` with its C name and C-faithful types:
+`pub ext fun` attributed to the stable logical library name `glfw`, with its
+C name and C-faithful types:
 
 ```mach
+#[library("glfw")]
 pub ext fun glfwCreateWindow(width: i32, height: i32, title: *u8, monitor: ptr, share: ptr) ptr;
 ```
 
@@ -188,7 +190,7 @@ Per target:
 | Target | Also needs |
 |---|---|
 | linux | X11, Wayland and xkbcommon **headers**, plus `wayland-scanner` (`xorg-dev libwayland-dev libwayland-bin libxkbcommon-dev` on Debian/Ubuntu; `libx11 wayland libxkbcommon` on Arch) |
-| windows | `zig`; its mingw-w64 headers supply the Win32 declarations. The manifest maps GLFW's dynamically exported C runtime calls to their UCRT API-set DLLs, while seven routines supplied by the static mingw CRT remain blocked on [mach#2530](https://github.com/briar-systems/mach/issues/2530) |
+| windows | `zig`; its mingw-w64 headers and static CRT supply the Win32 declarations and ordinary C runtime routines. The manifest maps GLFW's remaining dynamic UCRT calls to their API-set DLLs |
 | darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
 
 Both the X11 and Wayland backends are compiled in on linux; `glfwInit` picks
@@ -197,6 +199,13 @@ client libraries stay **dynamic system dependencies** — GLFW `dlopen`s them by
 soname and never links them — so they are not statically bound and are not
 listed in the manifest. Only libc-level libraries (`pthread`, `m`, `dl`, `rt`)
 are linked on linux, and `gdi32`/`user32`/`shell32` on windows.
+
+Every raw GLFW import uses `#[library("glfw")]`, the stable logical dependency
+name rather than a platform filename. Static builds resolve those declarations
+from the vendored archive. The system fallback maps the same identity to the
+selected target's concrete dependency: the resolved ELF SONAME (for example
+`libglfw.so.3`) on Linux, `glfw3.dll` on Windows, or the resolved dylib's
+`LC_ID_DYLIB` install name on Darwin.
 
 The archive is built non-PIC, so consumers cannot link it with `--pie`.
 
