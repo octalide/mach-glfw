@@ -37,7 +37,7 @@ targets = ["*"]
 link = [
     "glfw-static",
     "pthread", "m", "dl", "rt",
-    "gdi32", "user32", "shell32", "msvcrt",
+    "gdi32", "user32", "shell32", "kernel32",
     "Cocoa", "IOKit", "CoreFoundation", "CoreVideo", "OpenGL",
 ]
 need = []
@@ -102,14 +102,10 @@ isa = "*"
 abi = "*"
 export = true
 
-[link.msvcrt]
-source = "system"
-name = "msvcrt.dll"
-os = ["windows"]
-isa = "*"
-abi = "*"
-export = true
-
+# the four DLLs GLFW's win32 backend imports directly. the archive also leaves
+# 17 C runtime symbols undefined, which zig's windows-gnu target resolves from
+# the UCRT (api-ms-win-crt-*.dll), not msvcrt.dll; those need per-entry symbol
+# claims that the manifest cannot yet express — see briar-systems/mach#2530.
 [link.gdi32]
 source = "system"
 name = "gdi32.dll"
@@ -129,6 +125,14 @@ export = true
 [link.shell32]
 source = "system"
 name = "shell32.dll"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.kernel32]
+source = "system"
+name = "kernel32.dll"
 os = ["windows"]
 isa = "*"
 abi = "*"
