@@ -155,7 +155,10 @@ jobs:
             brew uninstall --ignore-dependencies glfw
           fi
           mach dep pull
-          mach build . --target darwin --profile debug
+          if ! mach build . --target darwin --profile debug; then
+            nm -u out/darwin/debug/vendor/glfw/libglfw.a || true
+            exit 1
+          fi
           mach build . --target darwin --profile release
           for profile in debug release; do
             exe="out/darwin/$profile/bin/glfw"
