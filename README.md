@@ -183,14 +183,15 @@ tree carries GLFW's zlib licence as `vendor/glfw/LICENSE.md`.
 **Build-time toolchain.** A target matching the host builds with the system
 `cc`; any other target goes through [`zig`](https://ziglang.org) (`zig cc`,
 `zig ar`), which supplies the cross sysroots. `CC`, `AR` and `SYSROOT`
-override the defaults.
+override the C build defaults; `ZIG` selects the Zig executable used to
+materialize the Windows runtime archives.
 
 Per target:
 
 | Target | Also needs |
 |---|---|
 | linux | X11, Wayland and xkbcommon **headers**, plus `wayland-scanner` (`xorg-dev libwayland-dev libwayland-bin libxkbcommon-dev` on Debian/Ubuntu; `libx11 wayland libxkbcommon` on Arch) |
-| windows | `zig`; its mingw-w64 headers and static CRT supply the Win32 declarations and ordinary C runtime routines. The manifest maps GLFW's remaining dynamic UCRT calls to their API-set DLLs |
+| windows | `zig`; its mingw-w64 headers and static CRT supply the Win32 declarations and ordinary C runtime routines. `tools/materialize-mingw-runtime.sh` asks that Zig invocation for its target-matched MinGW/compiler runtime archives; the manifest maps GLFW's remaining Win32 and UCRT imports to their DLLs |
 | darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
 
 Both the X11 and Wayland backends are compiled in on linux; `glfwInit` picks
@@ -215,6 +216,13 @@ artifact's `link` list to build against an installed GLFW ≥ 3.4
 (`pacman -S glfw`, `apt install libglfw3-dev`, …) instead of the vendored
 source.
 
+CI builds both profiles on all three operating systems. Linux and Darwin run
+`glfwInit` through the demo's `--smoke` mode; the Darwin lane exercises both
+the vendored archive and the system dylib. Windows is cross-built from Linux
+and its final PE import table and base relocations are inspected. Darwin builds
+run natively because the Apple SDK needed by the Objective-C backend cannot be
+redistributed to a Linux cross-runner.
+
 ## Scope of GLFW coverage
 
 | Domain | In v1 |
@@ -233,6 +241,9 @@ source.
 context, `glClearColor`/`glClear` loaded through `get_proc_address`, animated
 clear color, ESC closes via key callback. Serves as living documentation of
 the callback, context, and event-loop idioms.
+
+Pass `--smoke` to initialize GLFW, report its version, and terminate without
+opening a window. This is intended for runtime/linker validation in CI.
 
 ## Tests
 

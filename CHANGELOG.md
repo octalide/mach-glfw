@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- build: Vendor GLFW 3.4 and build it into target-specific static archives for
+  Linux, Windows, and Darwin.
+- ci: Build and run the vendored path on Linux and Darwin, cross-build and
+  inspect the Windows PE, and exercise the Darwin system-library fallback.
+
 ### Fixed
 - link: Attributed every raw GLFW import to the stable `glfw` dependency name
   across Linux, Windows, and Darwin.
+- link: Materialized Zig's MinGW runtime archives and attributed GLFW's Win32
+  and UCRT imports so Windows builds remain self-contained.
 
 ### Changed
 - manifest: Re-touched to RFC-exact totality per mach#1964/mach#1979.
+- distribution: The vendored static GLFW build is now the default; system GLFW
+  remains an explicit opt-in fallback.
 
 ## [0.3.0] - 2026-07-07
 
