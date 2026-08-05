@@ -162,6 +162,8 @@ jobs:
 
       - name: Install Zig
         run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
           $archive = Join-Path $env:RUNNER_TEMP 'zig.zip'
           $root = Join-Path $env:RUNNER_TEMP 'zig'
           curl.exe -fsSL "https://ziglang.org/download/$env:ZIG_VERSION/zig-x86_64-windows-$env:ZIG_VERSION.zip" -o $archive
@@ -173,6 +175,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
           $seed = Join-Path $env:RUNNER_TEMP 'mach-release'
           $src = Join-Path $env:RUNNER_TEMP 'mach-src'
           $bin = Join-Path $env:RUNNER_TEMP 'bin'

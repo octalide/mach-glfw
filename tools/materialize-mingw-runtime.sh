@@ -19,11 +19,12 @@ fi
 link_archive() {
     name=$1
     awk -v suffix="/$name" '
-        /^lld-link / {
+        {
             for (i = 1; i <= NF; i++) {
                 value = $i
                 sub(/^"/, "", value)
                 sub(/"$/, "", value)
+                gsub(/\\/, "/", value)
                 if (length(value) >= length(suffix) &&
                     substr(value, length(value) - length(suffix) + 1) == suffix) {
                     print value
