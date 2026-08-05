@@ -25,7 +25,7 @@ vendored and linked statically, and the link requirements cascade from
 itself:
 
 ```toml
-[deps.mach-glfw]
+[dep.mach-glfw]
 git = "https://github.com/briar-systems/mach-glfw"
 ref = "branch/main"
 ```
@@ -191,15 +191,17 @@ Per target:
 | Target | Also needs |
 |---|---|
 | linux | X11, Wayland and xkbcommon **headers**, plus `wayland-scanner` (`xorg-dev libwayland-dev libwayland-bin libxkbcommon-dev` on Debian/Ubuntu; `libx11 wayland libxkbcommon` on Arch) |
-| windows | `zig`; its mingw-w64 headers and static CRT supply the Win32 declarations and ordinary C runtime routines. `tools/materialize-mingw-runtime.sh` asks that Zig invocation for its target-matched MinGW/compiler runtime archives; the manifest maps GLFW's remaining Win32 and UCRT imports to their DLLs |
-| darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. The manifest attributes the Cocoa archive's measured foreign imports to libSystem, libobjc, CoreFoundation, CoreGraphics, IOKit, and Cocoa. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
+| windows | `zig`; its mingw-w64 headers and static CRT supply the Win32 declarations and ordinary C runtime routines. `tools/materialize-mingw-runtime.sh` asks that Zig invocation for its target-matched MinGW/compiler runtime archives; the manifest maps GLFW's remaining kernel32, user32, gdi32, shell32, and UCRT imports to their DLLs |
+| darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. The manifest attributes the archive's measured foreign imports to libSystem, libobjc, AppKit, Foundation, CoreFoundation, CoreGraphics, CoreServices, and IOKit; Cocoa, CoreVideo, and OpenGL remain declared framework dependencies. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
 
 Both the X11 and Wayland backends are compiled in on linux; `glfwInit` picks
 one at runtime, as a distro build of GLFW does. The X11, Wayland and OpenGL
 client libraries stay **dynamic system dependencies** — GLFW `dlopen`s them by
 soname and never links them — so they are not statically bound and are not
 listed in the manifest. Only libc-level libraries (`pthread`, `m`, `dl`, `rt`)
-are linked on linux, and `gdi32`/`user32`/`shell32` on windows.
+are linked on linux. Windows links GLFW's ordinary MinGW/compiler runtime code
+statically, then imports the measured kernel32, user32, gdi32, shell32, and UCRT
+surface from the operating system.
 
 Every raw GLFW import uses `#[library("glfw")]`, the stable logical dependency
 name rather than a platform filename. Static builds resolve those declarations
@@ -208,7 +210,10 @@ selected target's concrete dependency: the resolved ELF SONAME (for example
 `libglfw.so.3`) on Linux, `glfw3.dll` on Windows, or the resolved dylib's
 `LC_ID_DYLIB` install name on Darwin.
 
-The archive is built non-PIC, so consumers cannot link it with `--pie`.
+The linux archive is currently built with `-fno-pic -fno-PIE` because Mach does
+not yet support ELF's relaxable `R_X86_64_REX_GOTPCRELX` relocation
+(mach#2534), so linux consumers cannot link this archive with `--pie` yet.
+Darwin retains the toolchain's normal PIC code generation.
 
 **System-GLFW fallback.** The `system` entries remain declared in `mach.toml`
 as an opt-in: swap `"glfw-static"` for `"glfw"` and `"glfw-win"` in the
@@ -216,12 +221,14 @@ artifact's `link` list to build against an installed GLFW ≥ 3.4
 (`pacman -S glfw`, `apt install libglfw3-dev`, …) instead of the vendored
 source.
 
-CI builds both profiles on all three operating systems. Linux and Darwin run
+CI builds both profiles on all three operating systems and repeats the static
+link through a separate consuming-project fixture. Linux and Darwin run
 `glfwInit` through the demo's `--smoke` mode; the Darwin lane exercises both
 the vendored archive and the system dylib. Windows is cross-built from Linux
-and its final PE import table and base relocations are inspected. Darwin builds
-run natively because the Apple SDK needed by the Objective-C backend cannot be
-redistributed to a Linux cross-runner.
+for exact PE import/base-relocation inspection and built again on a native
+Windows runner, where both profiles execute the real `glfwInit` path. Darwin
+builds run natively because the Apple SDK needed by the Objective-C backend
+cannot be redistributed to a Linux cross-runner.
 
 ## Scope of GLFW coverage
 
