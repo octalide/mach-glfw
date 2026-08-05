@@ -34,9 +34,24 @@ kind = "bin"
 entry = "main.mach"
 out = "bin/glfw"
 targets = ["*"]
-link = ["glfw", "glfw-win", "Cocoa", "IOKit", "CoreVideo", "OpenGL"]
+link = [
+    "glfw-static",
+    "pthread", "m", "dl", "rt",
+    "gdi32", "user32", "shell32", "msvcrt",
+    "Cocoa", "IOKit", "CoreFoundation", "CoreVideo", "OpenGL",
+]
 need = []
 
+[link.glfw-static]
+source = "local"
+path = "{project.out}/vendor/glfw/libglfw.a"
+os = ["linux", "windows", "darwin"]
+isa = "*"
+abi = "*"
+export = true
+
+# opt-in fallback: swap "glfw-static" for "glfw"/"glfw-win" in the artifact's
+# link list to build against a system-installed GLFW instead of the vendored one
 [link.glfw]
 source = "system"
 name = "glfw"
@@ -53,9 +68,83 @@ isa = "*"
 abi = "*"
 export = true
 
+# the static archive carries these itself; a system libglfw.so resolved them
+# transitively. X11/wayland/GL are dlopen'd at runtime, so they are not linked.
+[link.pthread]
+source = "system"
+name = "pthread"
+os = ["linux"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.m]
+source = "system"
+name = "m"
+os = ["linux"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.dl]
+source = "system"
+name = "dl"
+os = ["linux"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.rt]
+source = "system"
+name = "rt"
+os = ["linux"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.msvcrt]
+source = "system"
+name = "msvcrt.dll"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.gdi32]
+source = "system"
+name = "gdi32.dll"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.user32]
+source = "system"
+name = "user32.dll"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.shell32]
+source = "system"
+name = "shell32.dll"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
 [link.Cocoa]
 source = "framework"
 name = "Cocoa"
+os = ["darwin"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.CoreFoundation]
+source = "framework"
+name = "CoreFoundation"
 os = ["darwin"]
 isa = "*"
 abi = "*"
@@ -84,6 +173,17 @@ os = ["darwin"]
 isa = "*"
 abi = "*"
 export = true
+
+[step.build-glfw]
+cmd = "tools/build-glfw.sh {project.out}/vendor/glfw"
+in = [
+    "tools/build-glfw.sh",
+    "vendor/glfw/include/GLFW/*",
+    "vendor/glfw/src/*",
+    "vendor/glfw/deps/wayland/*",
+]
+out = ["{project.out}/vendor/glfw/libglfw.a"]
+need = []
 
 [dep.mach-std]
 git = "https://github.com/briar-systems/mach-std"
