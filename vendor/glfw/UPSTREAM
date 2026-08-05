@@ -1,0 +1,11 @@
+upstream: https://github.com/glfw/glfw
+tag:      3.4
+sha256:   c038d34200234d071fae9345bc455e4a8f2f544ab60150765d7704e08f3dac01  (3.4.tar.gz)
+
+trimmed to the library build inputs only: include/GLFW public headers, src/
+(all .c/.m/.h, including the pre-generated mappings.h), deps/wayland protocol
+XML, and LICENSE.md. upstream CMake files, docs, tests, examples, and the
+example-only deps/ entries are not carried.
+
+to bump: re-extract the new tag and copy the same four paths. see
+tools/build-glfw.sh for the compilation matrix that consumes them.
