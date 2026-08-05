@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 env:
-  MACH_REF: a52d59ac984b813385df81940e92722fd2a13aaa
+  MACH_REF: eb3c17922ca4e5819fde965a9b66a8379e32883c
   ZIG_VERSION: "0.16.0"
 
 jobs:
@@ -72,6 +72,24 @@ jobs:
             grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-$profile.log"
           done
 
+      - name: Verify exported consumer link
+        run: |
+          set -euo pipefail
+          cd test/consumer
+          mach dep pull
+          mach build . --target linux-x86_64 --profile debug
+          mach build . --target linux-x86_64 --profile release
+          for profile in debug release; do
+            exe="out/linux-x86_64/$profile/bin/glfw-consumer"
+            ldd "$exe" > "$RUNNER_TEMP/glfw-consumer-$profile.ldd"
+            if grep -qi glfw "$RUNNER_TEMP/glfw-consumer-$profile.ldd"; then
+              echo "::error::$exe retains a dynamic GLFW dependency"
+              exit 1
+            fi
+            xvfb-run -a "$exe" | tee "$RUNNER_TEMP/glfw-consumer-$profile.log"
+            grep -q '^consumer smoke ok$' "$RUNNER_TEMP/glfw-consumer-$profile.log"
+          done
+
   windows:
     name: Windows static cross-build
     runs-on: ubuntu-latest
@@ -120,6 +138,74 @@ jobs:
             llvm-nm --defined-only "out/windows/$profile/vendor/glfw/libglfw.a" \
               > "$RUNNER_TEMP/glfw-$profile.nm"
             grep -q ' T glfwInit$' "$RUNNER_TEMP/glfw-$profile.nm"
+          done
+
+      - name: Verify exported consumer link
+        run: |
+          set -euo pipefail
+          cd test/consumer
+          mach dep pull
+          mach build . --target windows --profile debug
+          mach build . --target windows --profile release
+          ../../tools/check-windows-pe.sh \
+            out/windows/debug/bin/glfw-consumer \
+            out/windows/release/bin/glfw-consumer
+
+  windows-native:
+    name: Windows native runtime
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Zig
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'zig.zip'
+          $root = Join-Path $env:RUNNER_TEMP 'zig'
+          curl.exe -fsSL "https://ziglang.org/download/$env:ZIG_VERSION/zig-x86_64-windows-$env:ZIG_VERSION.zip" -o $archive
+          Expand-Archive -Path $archive -DestinationPath $root -Force
+          $zig = Get-ChildItem -Path $root -Directory | Select-Object -First 1
+          Add-Content -Path $env:GITHUB_PATH -Value $zig.FullName
+
+      - name: Build current Mach
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $seed = Join-Path $env:RUNNER_TEMP 'mach-release'
+          $src = Join-Path $env:RUNNER_TEMP 'mach-src'
+          $bin = Join-Path $env:RUNNER_TEMP 'bin'
+          New-Item -ItemType Directory -Path $seed, $src, $bin -Force | Out-Null
+          gh release download -R briar-systems/mach -p 'mach-*-x86_64-windows.zip' -D $seed --clobber
+          $zip = Get-ChildItem -Path $seed -Filter 'mach-*-x86_64-windows.zip' | Select-Object -First 1
+          Expand-Archive -Path $zip.FullName -DestinationPath $seed -Force
+          $bootstrap = Get-ChildItem -Path $seed -Filter 'mach.exe' -Recurse | Select-Object -First 1
+          git -C $src init
+          git -C $src remote add origin https://github.com/briar-systems/mach.git
+          git -C $src fetch --depth 1 origin $env:MACH_REF
+          git -C $src checkout --detach FETCH_HEAD
+          Push-Location $src
+          & $bootstrap.FullName dep pull
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $bootstrap.FullName build . --profile release -o current-mach.exe
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item current-mach.exe (Join-Path $bin 'mach.exe') -Force
+          Pop-Location
+          Add-Content -Path $env:GITHUB_PATH -Value $bin
+
+      - name: Build and run vendored static GLFW
+        shell: bash
+        run: |
+          set -euo pipefail
+          mach.exe dep pull
+          mach.exe build . --target windows --profile debug
+          mach.exe build . --target windows --profile release
+          for profile in debug release; do
+            exe="out/windows/$profile/bin/glfw"
+            "$exe" --smoke | tee "$RUNNER_TEMP/glfw-native-$profile.log"
+            grep -q '^GLFW 3\.4\.0$' "$RUNNER_TEMP/glfw-native-$profile.log"
+            grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-native-$profile.log"
           done
 
   darwin:
@@ -172,6 +258,24 @@ jobs:
             grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-static-$profile.log"
           done
 
+      - name: Verify exported consumer link
+        run: |
+          set -euo pipefail
+          cd test/consumer
+          mach dep pull
+          mach build . --target darwin --profile debug
+          mach build . --target darwin --profile release
+          for profile in debug release; do
+            exe="out/darwin/$profile/bin/glfw-consumer"
+            otool -L "$exe" > "$RUNNER_TEMP/glfw-consumer-$profile.otool"
+            if grep -qi glfw "$RUNNER_TEMP/glfw-consumer-$profile.otool"; then
+              echo "::error::$exe retains a dynamic GLFW dependency"
+              exit 1
+            fi
+            "$exe" | tee "$RUNNER_TEMP/glfw-consumer-$profile.log"
+            grep -q '^consumer smoke ok$' "$RUNNER_TEMP/glfw-consumer-$profile.log"
+          done
+
       - name: Build and run system dynamic GLFW
         run: |
           set -euo pipefail
@@ -184,6 +288,14 @@ jobs:
             exe="out/darwin/$profile/bin/glfw"
             otool -L "$exe" | grep -E 'libglfw(\.3)?\.dylib'
             "$exe" --smoke | tee "$RUNNER_TEMP/glfw-system-$profile.log"
-            grep -q '^GLFW 3\.4\.0$' "$RUNNER_TEMP/glfw-system-$profile.log"
+            version=$(sed -n 's/^GLFW //p' "$RUNNER_TEMP/glfw-system-$profile.log")
+            major=${version%%.*}
+            remainder=${version#*.}
+            minor=${remainder%%.*}
+            if [[ ! $major =~ ^[0-9]+$ || ! $minor =~ ^[0-9]+$ ]] ||
+               (( major < 3 || (major == 3 && minor < 4) )); then
+              echo "::error::system GLFW $version is older than 3.4"
+              exit 1
+            fi
             grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-system-$profile.log"
           done
