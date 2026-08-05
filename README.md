@@ -19,9 +19,10 @@ fun example() {
 }
 ```
 
-Consuming projects vendor the bindings as a normal Mach dependency. The system
-GLFW link requirement cascades from `mach-glfw`'s own manifest, so consumers
-do not need to redeclare `libs = ["glfw"]`:
+Consuming projects vendor the bindings as a normal Mach dependency. GLFW is
+vendored and linked statically, and the link requirements cascade from
+`mach-glfw`'s own manifest, so consumers declare nothing beyond the dependency
+itself:
 
 ```toml
 [deps.mach-glfw]
@@ -168,10 +169,42 @@ smaller dependency surfaces.
 
 ### Requirements and vendoring
 
-The bindings call the **system** GLFW: `libs = ["glfw"]` resolves to
-`libglfw.so` and binds the `ext fun` symbols dynamically at load time.
-GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
-…). GLFW itself is intentionally not vendored.
+GLFW 3.4 is vendored under `vendor/glfw/` and compiled into a static archive
+per target, so a shipped binary carries GLFW itself and end users need nothing
+installed. `[step.build-glfw]` runs `tools/build-glfw.sh`, which selects the
+compilation units and defines for the active build cell from `MACH_TARGET_OS`;
+`[link.glfw-static]` consumes the resulting `libglfw.a`.
+
+`vendor/glfw/UPSTREAM` records the pinned tag and how to bump it. The vendored
+tree carries GLFW's zlib licence as `vendor/glfw/LICENSE.md`.
+
+**Build-time toolchain.** A target matching the host builds with the system
+`cc`; any other target goes through [`zig`](https://ziglang.org) (`zig cc`,
+`zig ar`), which supplies the cross sysroots. `CC`, `AR` and `SYSROOT`
+override the defaults.
+
+Per target:
+
+| Target | Also needs |
+|---|---|
+| linux | X11, Wayland and xkbcommon **headers**, plus `wayland-scanner` (`xorg-dev libwayland-dev libwayland-bin libxkbcommon-dev` on Debian/Ubuntu; `libx11 wayland libxkbcommon` on Arch) |
+| windows | nothing beyond `zig` — the mingw-w64 headers ship with it |
+| darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
+
+Both the X11 and Wayland backends are compiled in on linux; `glfwInit` picks
+one at runtime, as a distro build of GLFW does. The X11, Wayland and OpenGL
+client libraries stay **dynamic system dependencies** — GLFW `dlopen`s them by
+soname and never links them — so they are not statically bound and are not
+listed in the manifest. Only libc-level libraries (`pthread`, `m`, `dl`, `rt`)
+are linked on linux, and `gdi32`/`user32`/`shell32` on windows.
+
+The archive is built non-PIC, so consumers cannot link it with `--pie`.
+
+**System-GLFW fallback.** The `system` entries remain declared in `mach.toml`
+as an opt-in: swap `"glfw-static"` for `"glfw"` and `"glfw-win"` in the
+artifact's `link` list to build against an installed GLFW ≥ 3.4
+(`pacman -S glfw`, `apt install libglfw3-dev`, …) instead of the vendored
+source.
 
 ## Scope of GLFW coverage
 
