@@ -36,10 +36,11 @@ out = "bin/glfw"
 targets = ["*"]
 link = [
     "glfw-static",
+    "mingw32", "compiler-rt",
     "pthread", "m", "dl", "rt",
     "gdi32", "user32", "shell32", "kernel32",
     "ucrt-heap", "ucrt-string", "ucrt-convert", "ucrt-utility",
-    "ucrt-math", "ucrt-private",
+    "ucrt-math", "ucrt-private", "ucrt-stdio",
     "Cocoa", "IOKit", "CoreFoundation", "CoreVideo", "OpenGL",
 ]
 need = []
@@ -67,6 +68,24 @@ export = true
 source = "system"
 name = "glfw3.dll"
 library = "glfw"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+# zig's mingw wrappers supply C functions that UCRT does not export directly;
+# compiler-rt supplies the compiler builtins used by the archive
+[link.mingw32]
+source = "local"
+path = "{project.out}/vendor/mingw/libmingw32.lib"
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
+[link.compiler-rt]
+source = "local"
+path = "{project.out}/vendor/mingw/compiler_rt.lib"
 os = ["windows"]
 isa = "*"
 abi = "*"
@@ -110,6 +129,13 @@ export = true
 [link.gdi32]
 source = "system"
 name = "gdi32.dll"
+library = "gdi32.dll"
+symbols = [
+    "ChoosePixelFormat", "CreateBitmap", "CreateDCW", "CreateDIBSection",
+    "CreateRectRgn", "DeleteDC", "DeleteObject", "DescribePixelFormat",
+    "GetDeviceCaps", "GetDeviceGammaRamp", "SetDeviceGammaRamp",
+    "SetPixelFormat", "SwapBuffers",
+]
 os = ["windows"]
 isa = "*"
 abi = "*"
@@ -118,6 +144,32 @@ export = true
 [link.user32]
 source = "system"
 name = "user32.dll"
+library = "user32.dll"
+symbols = [
+    "AdjustWindowRectEx", "BringWindowToTop", "ChangeDisplaySettingsExW",
+    "ClientToScreen", "ClipCursor", "CloseClipboard", "CreateIconIndirect",
+    "CreateWindowExW", "DefWindowProcW", "DestroyIcon", "DestroyWindow",
+    "DispatchMessageW", "EmptyClipboard", "EnumDisplayDevicesW",
+    "EnumDisplayMonitors", "EnumDisplaySettingsExW", "EnumDisplaySettingsW",
+    "FlashWindow", "GetActiveWindow", "GetClassLongPtrW", "GetClientRect",
+    "GetClipboardData", "GetCursorPos", "GetDC", "GetKeyState",
+    "GetLayeredWindowAttributes", "GetMessageTime", "GetMonitorInfoW",
+    "GetPropW", "GetRawInputData", "GetRawInputDeviceInfoA",
+    "GetRawInputDeviceList", "GetSystemMetrics", "GetWindowLongW",
+    "GetWindowPlacement", "GetWindowRect", "IsIconic", "IsWindowVisible",
+    "IsZoomed", "LoadCursorW", "LoadImageW", "MapVirtualKeyW",
+    "MonitorFromWindow", "MoveWindow", "MsgWaitForMultipleObjects",
+    "OffsetRect", "OpenClipboard", "PeekMessageW", "PostMessageW",
+    "PtInRect", "RegisterClassExW", "RegisterDeviceNotificationW",
+    "RegisterRawInputDevices", "ReleaseCapture", "ReleaseDC", "RemovePropW",
+    "ScreenToClient", "SendMessageW", "SetCapture", "SetClipboardData",
+    "SetCursor", "SetCursorPos", "SetFocus", "SetForegroundWindow",
+    "SetLayeredWindowAttributes", "SetPropW", "SetRect", "SetWindowLongW",
+    "SetWindowPlacement", "SetWindowPos", "SetWindowTextW", "ShowWindow",
+    "SystemParametersInfoW", "ToUnicode", "TrackMouseEvent",
+    "TranslateMessage", "UnregisterClassW", "UnregisterDeviceNotification",
+    "WaitMessage", "WindowFromPoint",
+]
 os = ["windows"]
 isa = "*"
 abi = "*"
@@ -126,6 +178,8 @@ export = true
 [link.shell32]
 source = "system"
 name = "shell32.dll"
+library = "shell32.dll"
+symbols = ["DragAcceptFiles", "DragFinish", "DragQueryFileW", "DragQueryPoint"]
 os = ["windows"]
 isa = "*"
 abi = "*"
@@ -134,6 +188,18 @@ export = true
 [link.kernel32]
 source = "system"
 name = "kernel32.dll"
+library = "kernel32.dll"
+symbols = [
+    "DeleteCriticalSection", "EnterCriticalSection", "FormatMessageW",
+    "FreeLibrary", "GetLastError", "GetModuleHandleExW", "GetModuleHandleW",
+    "GetProcAddress", "GetStartupInfoW", "GlobalAlloc", "GlobalFree",
+    "GlobalLock", "GlobalUnlock", "InitializeCriticalSection",
+    "LeaveCriticalSection", "LoadLibraryA", "MultiByteToWideChar",
+    "QueryPerformanceCounter", "QueryPerformanceFrequency",
+    "SetThreadExecutionState", "Sleep", "TlsAlloc", "TlsFree",
+    "TlsGetValue", "TlsSetValue", "VerSetConditionMask",
+    "WideCharToMultiByte",
+]
 os = ["windows"]
 isa = "*"
 abi = "*"
@@ -198,6 +264,15 @@ isa = "*"
 abi = "*"
 export = true
 
+[link.ucrt-stdio]
+source = "system"
+name = "api-ms-win-crt-stdio-l1-1-0.dll"
+symbols = ["__stdio_common_vsprintf", "__stdio_common_vsscanf"]
+os = ["windows"]
+isa = "*"
+abi = "*"
+export = true
+
 [link.Cocoa]
 source = "framework"
 name = "Cocoa"
@@ -247,6 +322,15 @@ in = [
     "vendor/glfw/deps/wayland/*",
 ]
 out = ["{project.out}/vendor/glfw/libglfw.a"]
+need = []
+
+[step.mingw-runtime]
+cmd = "tools/materialize-mingw-runtime.sh {project.out}/vendor/mingw/libmingw32.lib {project.out}/vendor/mingw/compiler_rt.lib"
+in = ["tools/materialize-mingw-runtime.sh"]
+out = [
+    "{project.out}/vendor/mingw/libmingw32.lib",
+    "{project.out}/vendor/mingw/compiler_rt.lib",
+]
 need = []
 
 [dep.mach-std]
