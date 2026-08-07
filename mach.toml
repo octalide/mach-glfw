@@ -280,17 +280,17 @@ source = "system"
 name = "/usr/lib/libSystem.B.dylib"
 library = "/usr/lib/libSystem.B.dylib"
 symbols = [
-    "___assert_rtn", "___bzero", "___memcpy_chk", "___sprintf_chk",
-    "___stack_chk_fail", "___stack_chk_guard", "__NSConcreteGlobalBlock",
-    "__NSGetProgname", "_chdir", "_dlclose", "_dlopen", "_dlsym", "_fmod",
-    "_free", "_mach_absolute_time", "_mach_timebase_info", "_malloc",
-    "_memcpy", "_memmove", "_memset", "_powf", "_pthread_getspecific",
-    "_pthread_key_create", "_pthread_key_delete", "_pthread_mutex_destroy",
-    "_pthread_mutex_init", "_pthread_mutex_lock", "_pthread_mutex_unlock",
-    "_pthread_setspecific", "_qsort", "_realloc", "_sprintf", "_sscanf",
-    "_strcmp", "_strcpy", "_strcspn", "_strlen", "_strncmp", "_strncpy",
-    "_strspn", "_strstr", "_strtok", "_strtol", "_strtoul", "_usleep",
-    "_vsnprintf",
+    "__assert_rtn", "__bzero", "__memcpy_chk", "__sprintf_chk",
+    "__stack_chk_fail", "__stack_chk_guard", "_NSConcreteGlobalBlock",
+    "_NSGetProgname", "chdir", "dlclose", "dlopen", "dlsym", "fmod",
+    "free", "mach_absolute_time", "mach_timebase_info", "malloc",
+    "memcpy", "memmove", "memset", "powf", "pthread_getspecific",
+    "pthread_key_create", "pthread_key_delete", "pthread_mutex_destroy",
+    "pthread_mutex_init", "pthread_mutex_lock", "pthread_mutex_unlock",
+    "pthread_setspecific", "qsort", "realloc", "sprintf", "sscanf",
+    "strcmp", "strcpy", "strcspn", "strlen", "strncmp", "strncpy",
+    "strspn", "strstr", "strtok", "strtol", "strtoul", "usleep",
+    "vsnprintf",
 ]
 os = ["darwin"]
 isa = "*"
@@ -302,12 +302,12 @@ source = "system"
 name = "/usr/lib/libobjc.A.dylib"
 library = "/usr/lib/libobjc.A.dylib"
 symbols = [
-    "_OBJC_CLASS_$_NSObject", "_OBJC_METACLASS_$_NSObject",
-    "__objc_empty_cache", "_objc_alloc", "_objc_alloc_init",
-    "_objc_autoreleasePoolPop", "_objc_autoreleasePoolPush",
-    "_objc_enumerationMutation", "_objc_msgSend", "_objc_msgSendSuper2",
-    "_objc_msgSend_stret", "_objc_opt_class", "_objc_opt_isKindOfClass",
-    "_objc_opt_respondsToSelector", "_objc_release", "_objc_retain",
+    "OBJC_CLASS_$_NSObject", "OBJC_METACLASS_$_NSObject",
+    "_objc_empty_cache", "objc_alloc", "objc_alloc_init",
+    "objc_autoreleasePoolPop", "objc_autoreleasePoolPush",
+    "objc_enumerationMutation", "objc_msgSend", "objc_msgSendSuper2",
+    "objc_msgSend_stret", "objc_opt_class", "objc_opt_isKindOfClass",
+    "objc_opt_respondsToSelector", "objc_release", "objc_retain",
 ]
 os = ["darwin"]
 isa = "*"
@@ -326,18 +326,18 @@ export = true
 source = "framework"
 name = "AppKit"
 symbols = [
-    "_NSApp", "_NSCalibratedRGBColorSpace", "_NSPasteboardTypeString",
-    "_NSPasteboardTypeURL", "_NSPasteboardURLReadingFileURLsOnlyKey",
-    "_NSTextInputContextKeyboardSelectionDidChangeNotification",
-    "_OBJC_CLASS_$_NSApplication", "_OBJC_CLASS_$_NSBitmapImageRep",
-    "_OBJC_CLASS_$_NSColor", "_OBJC_CLASS_$_NSCursor",
-    "_OBJC_CLASS_$_NSEvent", "_OBJC_CLASS_$_NSImage",
-    "_OBJC_CLASS_$_NSMenu", "_OBJC_CLASS_$_NSMenuItem",
-    "_OBJC_CLASS_$_NSOpenGLContext", "_OBJC_CLASS_$_NSOpenGLPixelFormat",
-    "_OBJC_CLASS_$_NSPasteboard", "_OBJC_CLASS_$_NSRunningApplication",
-    "_OBJC_CLASS_$_NSScreen", "_OBJC_CLASS_$_NSTrackingArea",
-    "_OBJC_CLASS_$_NSView", "_OBJC_CLASS_$_NSWindow",
-    "_OBJC_METACLASS_$_NSView", "_OBJC_METACLASS_$_NSWindow",
+    "NSApp", "NSCalibratedRGBColorSpace", "NSPasteboardTypeString",
+    "NSPasteboardTypeURL", "NSPasteboardURLReadingFileURLsOnlyKey",
+    "NSTextInputContextKeyboardSelectionDidChangeNotification",
+    "OBJC_CLASS_$_NSApplication", "OBJC_CLASS_$_NSBitmapImageRep",
+    "OBJC_CLASS_$_NSColor", "OBJC_CLASS_$_NSCursor",
+    "OBJC_CLASS_$_NSEvent", "OBJC_CLASS_$_NSImage",
+    "OBJC_CLASS_$_NSMenu", "OBJC_CLASS_$_NSMenuItem",
+    "OBJC_CLASS_$_NSOpenGLContext", "OBJC_CLASS_$_NSOpenGLPixelFormat",
+    "OBJC_CLASS_$_NSPasteboard", "OBJC_CLASS_$_NSRunningApplication",
+    "OBJC_CLASS_$_NSScreen", "OBJC_CLASS_$_NSTrackingArea",
+    "OBJC_CLASS_$_NSView", "OBJC_CLASS_$_NSWindow",
+    "OBJC_METACLASS_$_NSView", "OBJC_METACLASS_$_NSWindow",
 ]
 os = ["darwin"]
 isa = "*"
@@ -348,11 +348,11 @@ export = true
 source = "framework"
 name = "Foundation"
 symbols = [
-    "_NSMouseInRect", "_NSSelectorFromString",
-    "_OBJC_CLASS_$_NSAttributedString", "_OBJC_CLASS_$_NSBundle",
-    "_OBJC_CLASS_$_NSMutableAttributedString",
-    "_OBJC_CLASS_$_NSNotificationCenter", "_OBJC_CLASS_$_NSString",
-    "_OBJC_CLASS_$_NSThread",
+    "NSMouseInRect", "NSSelectorFromString",
+    "OBJC_CLASS_$_NSAttributedString", "OBJC_CLASS_$_NSBundle",
+    "OBJC_CLASS_$_NSMutableAttributedString",
+    "OBJC_CLASS_$_NSNotificationCenter", "OBJC_CLASS_$_NSString",
+    "OBJC_CLASS_$_NSThread",
 ]
 os = ["darwin"]
 isa = "*"
@@ -363,21 +363,21 @@ export = true
 source = "framework"
 name = "CoreGraphics"
 symbols = [
-    "_CGAcquireDisplayFadeReservation", "_CGAssociateMouseAndMouseCursorPosition",
-    "_CGDisplayBounds", "_CGDisplayCopyAllDisplayModes",
-    "_CGDisplayCopyDisplayMode", "_CGDisplayFade",
-    "_CGDisplayGammaTableCapacity", "_CGDisplayIsAsleep",
-    "_CGDisplayModeGetHeight", "_CGDisplayModeGetIOFlags",
-    "_CGDisplayModeGetRefreshRate", "_CGDisplayModeGetWidth",
-    "_CGDisplayModeRelease", "_CGDisplayModelNumber",
-    "_CGDisplayMoveCursorToPoint", "_CGDisplayScreenSize",
-    "_CGDisplaySetDisplayMode", "_CGDisplayUnitNumber",
-    "_CGDisplayVendorNumber", "_CGEventSourceCreate",
-    "_CGEventSourceSetLocalEventsSuppressionInterval",
-    "_CGGetDisplayTransferByTable", "_CGGetOnlineDisplayList",
-    "_CGMainDisplayID", "_CGOpenGLDisplayMaskToDisplayID",
-    "_CGReleaseDisplayFadeReservation", "_CGSetDisplayTransferByTable",
-    "_CGWarpMouseCursorPosition",
+    "CGAcquireDisplayFadeReservation", "CGAssociateMouseAndMouseCursorPosition",
+    "CGDisplayBounds", "CGDisplayCopyAllDisplayModes",
+    "CGDisplayCopyDisplayMode", "CGDisplayFade",
+    "CGDisplayGammaTableCapacity", "CGDisplayIsAsleep",
+    "CGDisplayModeGetHeight", "CGDisplayModeGetIOFlags",
+    "CGDisplayModeGetRefreshRate", "CGDisplayModeGetWidth",
+    "CGDisplayModeRelease", "CGDisplayModelNumber",
+    "CGDisplayMoveCursorToPoint", "CGDisplayScreenSize",
+    "CGDisplaySetDisplayMode", "CGDisplayUnitNumber",
+    "CGDisplayVendorNumber", "CGEventSourceCreate",
+    "CGEventSourceSetLocalEventsSuppressionInterval",
+    "CGGetDisplayTransferByTable", "CGGetOnlineDisplayList",
+    "CGMainDisplayID", "CGOpenGLDisplayMaskToDisplayID",
+    "CGReleaseDisplayFadeReservation", "CGSetDisplayTransferByTable",
+    "CGWarpMouseCursorPosition",
 ]
 os = ["darwin"]
 isa = "*"
@@ -387,7 +387,7 @@ export = true
 [link.CoreServices]
 source = "framework"
 name = "CoreServices"
-symbols = ["_UCKeyTranslate"]
+symbols = ["UCKeyTranslate"]
 os = ["darwin"]
 isa = "*"
 abi = "*"
@@ -397,26 +397,26 @@ export = true
 source = "framework"
 name = "CoreFoundation"
 symbols = [
-    "_CFArrayAppendValue", "_CFArrayCreateMutable", "_CFArrayGetCount",
-    "_CFArrayGetValueAtIndex", "_CFArraySortValues",
-    "_CFBundleCopyPrivateFrameworksURL", "_CFBundleCopyResourcesDirectoryURL",
-    "_CFBundleGetBundleWithIdentifier", "_CFBundleGetDataPointerForName",
-    "_CFBundleGetFunctionPointerForName", "_CFBundleGetMainBundle",
-    "_CFDictionaryCreateMutable", "_CFDictionaryGetValue",
-    "_CFDictionaryGetValueIfPresent", "_CFDictionarySetValue", "_CFGetTypeID",
-    "_CFNumberCreate", "_CFNumberGetValue", "_CFRelease", "_CFRunLoopGetMain",
-    "_CFRunLoopRunInMode", "_CFStringCompare", "_CFStringCreateWithCString",
-    "_CFStringCreateWithCharactersNoCopy", "_CFStringGetCString",
-    "_CFStringGetLength", "_CFStringGetMaximumSizeForEncoding",
-    "_CFURLCopyLastPathComponent", "_CFURLCreateCopyAppendingPathComponent",
-    "_CFURLGetFileSystemRepresentation", "_NSDefaultRunLoopMode",
-    "_OBJC_CLASS_$_NSArray", "_OBJC_CLASS_$_NSConstantDictionary",
-    "_OBJC_CLASS_$_NSDate", "_OBJC_CLASS_$_NSDictionary",
-    "_OBJC_CLASS_$_NSURL", "_OBJC_CLASS_$_NSUserDefaults",
-    "___CFConstantStringClassReference",
-    "___kCFBooleanFalse", "___kCFBooleanTrue", "_kCFAllocatorDefault",
-    "_kCFAllocatorNull", "_kCFRunLoopDefaultMode", "_kCFTypeArrayCallBacks",
-    "_kCFTypeDictionaryKeyCallBacks", "_kCFTypeDictionaryValueCallBacks",
+    "CFArrayAppendValue", "CFArrayCreateMutable", "CFArrayGetCount",
+    "CFArrayGetValueAtIndex", "CFArraySortValues",
+    "CFBundleCopyPrivateFrameworksURL", "CFBundleCopyResourcesDirectoryURL",
+    "CFBundleGetBundleWithIdentifier", "CFBundleGetDataPointerForName",
+    "CFBundleGetFunctionPointerForName", "CFBundleGetMainBundle",
+    "CFDictionaryCreateMutable", "CFDictionaryGetValue",
+    "CFDictionaryGetValueIfPresent", "CFDictionarySetValue", "CFGetTypeID",
+    "CFNumberCreate", "CFNumberGetValue", "CFRelease", "CFRunLoopGetMain",
+    "CFRunLoopRunInMode", "CFStringCompare", "CFStringCreateWithCString",
+    "CFStringCreateWithCharactersNoCopy", "CFStringGetCString",
+    "CFStringGetLength", "CFStringGetMaximumSizeForEncoding",
+    "CFURLCopyLastPathComponent", "CFURLCreateCopyAppendingPathComponent",
+    "CFURLGetFileSystemRepresentation", "NSDefaultRunLoopMode",
+    "OBJC_CLASS_$_NSArray", "OBJC_CLASS_$_NSConstantDictionary",
+    "OBJC_CLASS_$_NSDate", "OBJC_CLASS_$_NSDictionary",
+    "OBJC_CLASS_$_NSURL", "OBJC_CLASS_$_NSUserDefaults",
+    "__CFConstantStringClassReference",
+    "__kCFBooleanFalse", "__kCFBooleanTrue", "kCFAllocatorDefault",
+    "kCFAllocatorNull", "kCFRunLoopDefaultMode", "kCFTypeArrayCallBacks",
+    "kCFTypeDictionaryKeyCallBacks", "kCFTypeDictionaryValueCallBacks",
 ]
 os = ["darwin"]
 isa = "*"
@@ -427,18 +427,18 @@ export = true
 source = "framework"
 name = "IOKit"
 symbols = [
-    "_IODisplayCreateInfoDictionary", "_IOHIDDeviceCopyMatchingElements",
-    "_IOHIDDeviceGetProperty", "_IOHIDDeviceGetValue",
-    "_IOHIDElementGetLogicalMax", "_IOHIDElementGetLogicalMin",
-    "_IOHIDElementGetType", "_IOHIDElementGetTypeID",
-    "_IOHIDElementGetUsage", "_IOHIDElementGetUsagePage",
-    "_IOHIDManagerCreate", "_IOHIDManagerOpen",
-    "_IOHIDManagerRegisterDeviceMatchingCallback",
-    "_IOHIDManagerRegisterDeviceRemovalCallback",
-    "_IOHIDManagerScheduleWithRunLoop", "_IOHIDManagerSetDeviceMatchingMultiple",
-    "_IOHIDValueGetIntegerValue", "_IOIteratorNext", "_IOObjectRelease",
-    "_IORegistryEntryCreateCFProperty", "_IOServiceGetMatchingServices",
-    "_IOServiceMatching",
+    "IODisplayCreateInfoDictionary", "IOHIDDeviceCopyMatchingElements",
+    "IOHIDDeviceGetProperty", "IOHIDDeviceGetValue",
+    "IOHIDElementGetLogicalMax", "IOHIDElementGetLogicalMin",
+    "IOHIDElementGetType", "IOHIDElementGetTypeID",
+    "IOHIDElementGetUsage", "IOHIDElementGetUsagePage",
+    "IOHIDManagerCreate", "IOHIDManagerOpen",
+    "IOHIDManagerRegisterDeviceMatchingCallback",
+    "IOHIDManagerRegisterDeviceRemovalCallback",
+    "IOHIDManagerScheduleWithRunLoop", "IOHIDManagerSetDeviceMatchingMultiple",
+    "IOHIDValueGetIntegerValue", "IOIteratorNext", "IOObjectRelease",
+    "IORegistryEntryCreateCFProperty", "IOServiceGetMatchingServices",
+    "IOServiceMatching",
 ]
 os = ["darwin"]
 isa = "*"
