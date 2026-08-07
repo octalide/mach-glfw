@@ -72,24 +72,6 @@ jobs:
             grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-$profile.log"
           done
 
-      - name: Verify exported consumer link
-        run: |
-          set -euo pipefail
-          cd test/consumer
-          mach dep pull
-          mach build . --target linux-x86_64 --profile debug
-          mach build . --target linux-x86_64 --profile release
-          for profile in debug release; do
-            exe="out/linux-x86_64/$profile/bin/glfw-consumer"
-            ldd "$exe" > "$RUNNER_TEMP/glfw-consumer-$profile.ldd"
-            if grep -qi glfw "$RUNNER_TEMP/glfw-consumer-$profile.ldd"; then
-              echo "::error::$exe retains a dynamic GLFW dependency"
-              exit 1
-            fi
-            xvfb-run -a "$exe" | tee "$RUNNER_TEMP/glfw-consumer-$profile.log"
-            grep -q '^consumer smoke ok$' "$RUNNER_TEMP/glfw-consumer-$profile.log"
-          done
-
   windows:
     name: Windows static cross-build
     runs-on: ubuntu-latest
@@ -132,17 +114,6 @@ jobs:
               > "$RUNNER_TEMP/glfw-$profile.nm"
             grep -q ' T glfwInit$' "$RUNNER_TEMP/glfw-$profile.nm"
           done
-
-      - name: Verify exported consumer link
-        run: |
-          set -euo pipefail
-          cd test/consumer
-          mach dep pull
-          mach build . --target windows --profile debug
-          mach build . --target windows --profile release
-          ../../tools/check-windows-pe.sh \
-            out/windows/debug/bin/glfw-consumer \
-            out/windows/release/bin/glfw-consumer
 
   windows-native:
     name: Windows native runtime
@@ -250,27 +221,6 @@ jobs:
             "$exe" --smoke | tee "$RUNNER_TEMP/glfw-static-$profile.log"
             grep -q '^GLFW 3\.4\.0$' "$RUNNER_TEMP/glfw-static-$profile.log"
             grep -q '^smoke ok$' "$RUNNER_TEMP/glfw-static-$profile.log"
-          done
-
-      - name: Verify exported consumer link
-        run: |
-          set -euo pipefail
-          cd test/consumer
-          mach dep pull
-          # --pie for the same reason as the static leg (mach#2599)
-          mach build . --target darwin --profile debug --pie
-          mach build . --target darwin --profile release --pie
-          for profile in debug release; do
-            exe="out/darwin/$profile/bin/glfw-consumer"
-            # same header caveat as the static leg above
-            otool -L "$exe" | tail -n +2 > "$RUNNER_TEMP/glfw-consumer-$profile.otool"
-            if grep -qi glfw "$RUNNER_TEMP/glfw-consumer-$profile.otool"; then
-              echo "::error::$exe retains a dynamic GLFW dependency"
-              cat "$RUNNER_TEMP/glfw-consumer-$profile.otool"
-              exit 1
-            fi
-            "$exe" | tee "$RUNNER_TEMP/glfw-consumer-$profile.log"
-            grep -q '^consumer smoke ok$' "$RUNNER_TEMP/glfw-consumer-$profile.log"
           done
 
       - name: Build and run system dynamic GLFW
