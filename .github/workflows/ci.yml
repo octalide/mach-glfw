@@ -8,7 +8,12 @@ permissions:
   contents: read
 
 env:
-  MACH_REF: 91ea708fbd1623bccf17aa41b9f50fb7519e8e71
+  # mach 4.8.0 (briar-systems/mach#2603). carries the [step] fix (#2578, #2587):
+  # before it, every build step on a native windows host failed with
+  # `error: failed to execute build step`, which is what the windows leg here
+  # was dying on. bump this deliberately at each mach release -- the seed
+  # download below only bootstraps, so this pin is the compiler under test.
+  MACH_REF: e2e5e72218fb355c5756b99edce0088138070d77
   ZIG_VERSION: "0.16.0"
 
 jobs:
