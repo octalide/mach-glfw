@@ -221,11 +221,18 @@ jobs:
             brew uninstall --ignore-dependencies glfw
           fi
           mach dep pull
-          if ! mach build . --target darwin --profile debug; then
+          # --pie is load-bearing on darwin, not an optimization. a non-PIE
+          # image emits no section commands on its load segments (mach#2599),
+          # and libobjc finds __DATA,__objc_classlist / __objc_imageinfo
+          # through exactly those. GLFW's cocoa backend is objective-c, so a
+          # non-PIE build links and loads and then dies at the first class
+          # reference with `objc: Attempt to use unknown class` / SIGABRT.
+          # macOS wants PIE executables regardless.
+          if ! mach build . --target darwin --profile debug --pie; then
             nm -u out/darwin/debug/vendor/glfw/libglfw.a || true
             exit 1
           fi
-          mach build . --target darwin --profile release
+          mach build . --target darwin --profile release --pie
           for profile in debug release; do
             exe="out/darwin/$profile/bin/glfw"
             # `otool -L` opens with the binary's own path, and this binary is
@@ -249,8 +256,9 @@ jobs:
           set -euo pipefail
           cd test/consumer
           mach dep pull
-          mach build . --target darwin --profile debug
-          mach build . --target darwin --profile release
+          # --pie for the same reason as the static leg (mach#2599)
+          mach build . --target darwin --profile debug --pie
+          mach build . --target darwin --profile release --pie
           for profile in debug release; do
             exe="out/darwin/$profile/bin/glfw-consumer"
             # same header caveat as the static leg above
@@ -270,8 +278,8 @@ jobs:
           brew install glfw
           sed -i.bak 's/    "glfw-static",/    "glfw",/' mach.toml
           prefix=$(brew --prefix glfw)
-          mach build . --target darwin --profile debug -L "$prefix/lib"
-          mach build . --target darwin --profile release -L "$prefix/lib"
+          mach build . --target darwin --profile debug --pie -L "$prefix/lib"
+          mach build . --target darwin --profile release --pie -L "$prefix/lib"
           for profile in debug release; do
             exe="out/darwin/$profile/bin/glfw"
             otool -L "$exe" | grep -E 'libglfw(\.3)?\.dylib'
