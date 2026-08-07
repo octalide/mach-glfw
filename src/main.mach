@@ -6,6 +6,7 @@
 
 use std.runtime;
 use std.types.bool.true;
+use std.types.string.str_equals;
 use print: std.print;
 use glfw.glfw;
 
@@ -41,6 +42,12 @@ fun main(argc: i64, argv: **u8) i64 {
     var rev: i32 = 0;
     glfw.get_version(?major, ?minor, ?rev);
     print.printf("GLFW {}.{}.{}\n", major::i64, minor::i64, rev::i64);
+
+    if (argc > 1 && str_equals(argv[1], "--smoke")) {
+        glfw.terminate();
+        print.println("smoke ok");
+        ret 0;
+    }
 
     val w: glfw.Window = glfw.open_window(800, 600, "mach-glfw");
     if (!glfw.window_is_valid(w)) {

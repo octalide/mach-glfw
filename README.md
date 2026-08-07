@@ -19,12 +19,13 @@ fun example() {
 }
 ```
 
-Consuming projects vendor the bindings as a normal Mach dependency. The system
-GLFW link requirement cascades from `mach-glfw`'s own manifest, so consumers
-do not need to redeclare `libs = ["glfw"]`:
+Consuming projects vendor the bindings as a normal Mach dependency. GLFW is
+vendored and linked statically, and the link requirements cascade from
+`mach-glfw`'s own manifest, so consumers declare nothing beyond the dependency
+itself:
 
 ```toml
-[deps.mach-glfw]
+[dep.mach-glfw]
 git = "https://github.com/briar-systems/mach-glfw"
 ref = "branch/main"
 ```
@@ -170,15 +171,64 @@ smaller dependency surfaces.
 
 ### Requirements and vendoring
 
-The bindings call the **system** GLFW. Every raw import uses
-`#[library("glfw")]`, where `glfw` is the stable logical dependency name rather
-than a platform filename. The manifest maps it to the selected target's
-concrete dependency: the resolved ELF SONAME (for example `libglfw.so.3`) on
-Linux, `glfw3.dll` on Windows, or the resolved dylib's `LC_ID_DYLIB` install
-name on Darwin.
+GLFW 3.4 is vendored under `vendor/glfw/` and compiled into a static archive
+per target, so a shipped binary carries GLFW itself and end users need nothing
+installed. `[step.build-glfw]` runs `tools/build-glfw.sh`, which selects the
+compilation units and defines for the active build cell from `MACH_TARGET_OS`;
+`[link.glfw-static]` consumes the resulting `libglfw.a`.
 
-GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
-…). GLFW itself is intentionally not vendored.
+`vendor/glfw/UPSTREAM` records the pinned tag and how to bump it. The vendored
+tree carries GLFW's zlib licence as `vendor/glfw/LICENSE.md`.
+
+**Build-time toolchain.** A target matching the host builds with the system
+`cc`; any other target goes through [`zig`](https://ziglang.org) (`zig cc`,
+`zig ar`), which supplies the cross sysroots. `CC`, `AR` and `SYSROOT`
+override the C build defaults; `ZIG` selects the Zig executable used to
+materialize the Windows runtime archives.
+
+Per target:
+
+| Target | Also needs |
+|---|---|
+| linux | X11, Wayland and xkbcommon **headers**, plus `wayland-scanner` (`xorg-dev libwayland-dev libwayland-bin libxkbcommon-dev` on Debian/Ubuntu; `libx11 wayland libxkbcommon` on Arch) |
+| windows | `zig`; its mingw-w64 headers and static CRT supply the Win32 declarations and ordinary C runtime routines. `tools/materialize-mingw-runtime.sh` asks that Zig invocation for its target-matched MinGW/compiler runtime archives; the manifest maps GLFW's remaining kernel32, user32, gdi32, shell32, and UCRT imports to their DLLs |
+| darwin | the Apple SDK, so a macOS host or `MACOS_SDK` pointing at an SDK root. The manifest attributes the archive's measured foreign imports to libSystem, libobjc, AppKit, Foundation, CoreFoundation, CoreGraphics, CoreServices, and IOKit; Cocoa, CoreVideo, and OpenGL remain declared framework dependencies. `zig` carries no framework headers and Apple's SDK is not redistributable, so darwin cannot be cross-built from linux |
+
+Both the X11 and Wayland backends are compiled in on linux; `glfwInit` picks
+one at runtime, as a distro build of GLFW does. The X11, Wayland and OpenGL
+client libraries stay **dynamic system dependencies** — GLFW `dlopen`s them by
+soname and never links them — so they are not statically bound and are not
+listed in the manifest. Only libc-level libraries (`pthread`, `m`, `dl`, `rt`)
+are linked on linux. Windows links GLFW's ordinary MinGW/compiler runtime code
+statically, then imports the measured kernel32, user32, gdi32, shell32, and UCRT
+surface from the operating system.
+
+Every raw GLFW import uses `#[library("glfw")]`, the stable logical dependency
+name rather than a platform filename. Static builds resolve those declarations
+from the vendored archive. The system fallback maps the same identity to the
+selected target's concrete dependency: the resolved ELF SONAME (for example
+`libglfw.so.3`) on Linux, `glfw3.dll` on Windows, or the resolved dylib's
+`LC_ID_DYLIB` install name on Darwin.
+
+The linux archive is currently built with `-fno-pic -fno-PIE` because Mach does
+not yet support ELF's relaxable `R_X86_64_REX_GOTPCRELX` relocation
+(mach#2534), so linux consumers cannot link this archive with `--pie` yet.
+Darwin retains the toolchain's normal PIC code generation.
+
+**System-GLFW fallback.** The `system` entries remain declared in `mach.toml`
+as an opt-in: swap `"glfw-static"` for `"glfw"` and `"glfw-win"` in the
+artifact's `link` list to build against an installed GLFW ≥ 3.4
+(`pacman -S glfw`, `apt install libglfw3-dev`, …) instead of the vendored
+source.
+
+CI builds both profiles on all three operating systems and repeats the static
+link through a separate consuming-project fixture. Linux and Darwin run
+`glfwInit` through the demo's `--smoke` mode; the Darwin lane exercises both
+the vendored archive and the system dylib. Windows is cross-built from Linux
+for exact PE import/base-relocation inspection and built again on a native
+Windows runner, where both profiles execute the real `glfwInit` path. Darwin
+builds run natively because the Apple SDK needed by the Objective-C backend
+cannot be redistributed to a Linux cross-runner.
 
 ## Scope of GLFW coverage
 
@@ -198,6 +248,9 @@ GLFW ≥ 3.4 must be installed (`pacman -S glfw`, `apt install libglfw3-dev`,
 context, `glClearColor`/`glClear` loaded through `get_proc_address`, animated
 clear color, ESC closes via key callback. Serves as living documentation of
 the callback, context, and event-loop idioms.
+
+Pass `--smoke` to initialize GLFW, report its version, and terminate without
+opening a window. This is intended for runtime/linker validation in CI.
 
 ## Tests
 

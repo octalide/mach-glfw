@@ -1,0 +1,16 @@
+# dependency consumer proving the exported static link cascade initializes GLFW
+
+use std.runtime;
+use print: std.print;
+use glfw.glfw;
+
+#[symbol("main")]
+fun main(argc: i64, argv: **u8) i64 {
+    if (!glfw.init()) {
+        print.eprintln("consumer glfw init failed");
+        ret 1;
+    }
+    glfw.terminate();
+    print.println("consumer smoke ok");
+    ret 0;
+}
