@@ -221,13 +221,11 @@ jobs:
             brew uninstall --ignore-dependencies glfw
           fi
           mach dep pull
-          # --pie is load-bearing on darwin, not an optimization. a non-PIE
-          # image emits no section commands on its load segments (mach#2599),
-          # and libobjc finds __DATA,__objc_classlist / __objc_imageinfo
-          # through exactly those. GLFW's cocoa backend is objective-c, so a
-          # non-PIE build links and loads and then dies at the first class
-          # reference with `objc: Attempt to use unknown class` / SIGABRT.
-          # macOS wants PIE executables regardless.
+          # macOS wants PIE executables, and mach-std's darwin x86_64 entry
+          # reads argc/argv per the image's load command, so a --pie image gets
+          # them in registers from LC_MAIN (mach-std#421). keep the flag and the
+          # lock together: an older mach-std here silently loses argv, which
+          # surfaces as the smoke run walking past its own `--smoke` branch.
           if ! mach build . --target darwin --profile debug --pie; then
             # a two-level-namespace link failure is almost always a missing
             # `symbols` attribution, so emit the mapping read off the SDK rather
