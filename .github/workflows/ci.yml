@@ -229,7 +229,10 @@ jobs:
           # reference with `objc: Attempt to use unknown class` / SIGABRT.
           # macOS wants PIE executables regardless.
           if ! mach build . --target darwin --profile debug --pie; then
-            nm -u out/darwin/debug/vendor/glfw/libglfw.a || true
+            # a two-level-namespace link failure is almost always a missing
+            # `symbols` attribution, so emit the mapping read off the SDK rather
+            # than a bare symbol list nobody can act on.
+            bash tools/darwin-symbol-map.sh out/darwin/debug/vendor/glfw/libglfw.a || true
             exit 1
           fi
           mach build . --target darwin --profile release --pie
