@@ -79,7 +79,13 @@ for entry in $candidates; do
                 gsub(/objc-classes/, "", line)
                 n = split(line, tok, /[^A-Za-z0-9_]+/)
                 for (i = 1; i <= n; i++)
-                    if (tok[i] != "") print "_OBJC_CLASS_$_" tok[i]
+                    if (tok[i] != "") {
+                        # one class entry implies both symbols. subclassing a
+                        # framework class references the metaclass too, which is
+                        # how GLFW pulls in NSView/NSWindow for its own views.
+                        print "_OBJC_CLASS_$_" tok[i]
+                        print "_OBJC_METACLASS_$_" tok[i]
+                    }
                 if (index($0, "]") > 0) inobjc = 0
             }
         ' "$tbd"
