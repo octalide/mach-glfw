@@ -228,9 +228,15 @@ jobs:
           mach build . --target darwin --profile release
           for profile in debug release; do
             exe="out/darwin/$profile/bin/glfw"
-            otool -L "$exe" > "$RUNNER_TEMP/glfw-static-$profile.otool"
+            # `otool -L` opens with the binary's own path, and this binary is
+            # named glfw, so grepping the whole output matches that header and
+            # fails no matter how static the link is. drop it and inspect only
+            # the dependency lines. `ldd` on the linux leg prints no such
+            # header, which is why the identical grep is safe there.
+            otool -L "$exe" | tail -n +2 > "$RUNNER_TEMP/glfw-static-$profile.otool"
             if grep -qi glfw "$RUNNER_TEMP/glfw-static-$profile.otool"; then
               echo "::error::$exe retains a dynamic GLFW dependency"
+              cat "$RUNNER_TEMP/glfw-static-$profile.otool"
               exit 1
             fi
             "$exe" --smoke | tee "$RUNNER_TEMP/glfw-static-$profile.log"
@@ -247,9 +253,11 @@ jobs:
           mach build . --target darwin --profile release
           for profile in debug release; do
             exe="out/darwin/$profile/bin/glfw-consumer"
-            otool -L "$exe" > "$RUNNER_TEMP/glfw-consumer-$profile.otool"
+            # same header caveat as the static leg above
+            otool -L "$exe" | tail -n +2 > "$RUNNER_TEMP/glfw-consumer-$profile.otool"
             if grep -qi glfw "$RUNNER_TEMP/glfw-consumer-$profile.otool"; then
               echo "::error::$exe retains a dynamic GLFW dependency"
+              cat "$RUNNER_TEMP/glfw-consumer-$profile.otool"
               exit 1
             fi
             "$exe" | tee "$RUNNER_TEMP/glfw-consumer-$profile.log"
