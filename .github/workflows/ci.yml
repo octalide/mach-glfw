@@ -7,13 +7,13 @@ on:
 permissions:
   contents: read
 
+# every job builds with the latest published mach release, taken straight from
+# its archive. there is no ref to pin and no compiler built from source here:
+# this repo is a consumer, so the compiler it should be tested against is the
+# one its users actually get. a `MACH_REF` pin used to name the compiler under
+# test, which meant CI could sit for days validating a mach nobody ran, and its
+# failures read as defects in this repo rather than as a stale pin.
 env:
-  # mach 4.8.0 (briar-systems/mach#2603). carries the [step] fix (#2578, #2587):
-  # before it, every build step on a native windows host failed with
-  # `error: failed to execute build step`, which is what the windows leg here
-  # was dying on. bump this deliberately at each mach release -- the seed
-  # download below only bootstraps, so this pin is the compiler under test.
-  MACH_REF: e2e5e72218fb355c5756b99edce0088138070d77
   ZIG_VERSION: "0.16.0"
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y llvm xauth xorg-dev xvfb libwayland-bin libwayland-dev libxkbcommon-dev wayland-protocols
 
-      - name: Build current Mach
+      - name: Install Mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -38,16 +38,11 @@ jobs:
           gh release download -R briar-systems/mach \
             -p 'mach-*-x86_64-linux.tar.gz' -D "$RUNNER_TEMP/mach-release" --clobber
           tar -xzf "$RUNNER_TEMP"/mach-release/mach-*-x86_64-linux.tar.gz -C "$RUNNER_TEMP/mach-release"
-          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bootstrap-mach"
-          git init "$RUNNER_TEMP/mach-src"
-          git -C "$RUNNER_TEMP/mach-src" remote add origin https://github.com/briar-systems/mach.git
-          git -C "$RUNNER_TEMP/mach-src" fetch --depth 1 origin "$MACH_REF"
-          git -C "$RUNNER_TEMP/mach-src" checkout --detach FETCH_HEAD
-          cd "$RUNNER_TEMP/mach-src"
-          "$RUNNER_TEMP/bootstrap-mach" dep pull
-          "$RUNNER_TEMP/bootstrap-mach" build . --profile release
-          install -m 0755 out/linux-x86_64/release/bin/mach "$RUNNER_TEMP/bin/mach"
+          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bin/mach"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          # log which release this run actually resolved, so a failure can be
+          # attributed to a mach version without digging through the download
+          "$RUNNER_TEMP/bin/mach" help | head -1
 
       - name: Build and test vendored GLFW
         run: |
@@ -110,7 +105,7 @@ jobs:
             | tar -xJ -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/zig-x86_64-linux-$ZIG_VERSION" >> "$GITHUB_PATH"
 
-      - name: Build current Mach
+      - name: Install Mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -119,16 +114,9 @@ jobs:
           gh release download -R briar-systems/mach \
             -p 'mach-*-x86_64-linux.tar.gz' -D "$RUNNER_TEMP/mach-release" --clobber
           tar -xzf "$RUNNER_TEMP"/mach-release/mach-*-x86_64-linux.tar.gz -C "$RUNNER_TEMP/mach-release"
-          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bootstrap-mach"
-          git init "$RUNNER_TEMP/mach-src"
-          git -C "$RUNNER_TEMP/mach-src" remote add origin https://github.com/briar-systems/mach.git
-          git -C "$RUNNER_TEMP/mach-src" fetch --depth 1 origin "$MACH_REF"
-          git -C "$RUNNER_TEMP/mach-src" checkout --detach FETCH_HEAD
-          cd "$RUNNER_TEMP/mach-src"
-          "$RUNNER_TEMP/bootstrap-mach" dep pull
-          "$RUNNER_TEMP/bootstrap-mach" build . --profile release
-          install -m 0755 out/linux-x86_64/release/bin/mach "$RUNNER_TEMP/bin/mach"
+          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bin/mach"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/mach" help | head -1
 
       - name: Build and inspect vendored GLFW
         run: |
@@ -176,32 +164,22 @@ jobs:
           $zig = Get-ChildItem -Path $root -Directory | Select-Object -First 1
           Add-Content -Path $env:GITHUB_PATH -Value $zig.FullName
 
-      - name: Build current Mach
+      - name: Install Mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
           $seed = Join-Path $env:RUNNER_TEMP 'mach-release'
-          $src = Join-Path $env:RUNNER_TEMP 'mach-src'
           $bin = Join-Path $env:RUNNER_TEMP 'bin'
-          New-Item -ItemType Directory -Path $seed, $src, $bin -Force | Out-Null
+          New-Item -ItemType Directory -Path $seed, $bin -Force | Out-Null
           gh release download -R briar-systems/mach -p 'mach-*-x86_64-windows.zip' -D $seed --clobber
           $zip = Get-ChildItem -Path $seed -Filter 'mach-*-x86_64-windows.zip' | Select-Object -First 1
           Expand-Archive -Path $zip.FullName -DestinationPath $seed -Force
-          $bootstrap = Get-ChildItem -Path $seed -Filter 'mach.exe' -Recurse | Select-Object -First 1
-          git -C $src init
-          git -C $src remote add origin https://github.com/briar-systems/mach.git
-          git -C $src fetch --depth 1 origin $env:MACH_REF
-          git -C $src checkout --detach FETCH_HEAD
-          Push-Location $src
-          & $bootstrap.FullName dep pull
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $bootstrap.FullName build . --profile release -o current-mach.exe
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item current-mach.exe (Join-Path $bin 'mach.exe') -Force
-          Pop-Location
+          $exe = Get-ChildItem -Path $seed -Filter 'mach.exe' -Recurse | Select-Object -First 1
+          Copy-Item $exe.FullName (Join-Path $bin 'mach.exe') -Force
           Add-Content -Path $env:GITHUB_PATH -Value $bin
+          & (Join-Path $bin 'mach.exe') help | Select-Object -First 1
 
       - name: Build and run vendored static GLFW
         shell: bash
@@ -223,7 +201,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Build current Mach
+      - name: Install Mach
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -232,16 +210,9 @@ jobs:
           gh release download -R briar-systems/mach \
             -p 'mach-*-x86_64-darwin.tar.gz' -D "$RUNNER_TEMP/mach-release" --clobber
           tar -xzf "$RUNNER_TEMP"/mach-release/mach-*-x86_64-darwin.tar.gz -C "$RUNNER_TEMP/mach-release"
-          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bootstrap-mach"
-          git init "$RUNNER_TEMP/mach-src"
-          git -C "$RUNNER_TEMP/mach-src" remote add origin https://github.com/briar-systems/mach.git
-          git -C "$RUNNER_TEMP/mach-src" fetch --depth 1 origin "$MACH_REF"
-          git -C "$RUNNER_TEMP/mach-src" checkout --detach FETCH_HEAD
-          cd "$RUNNER_TEMP/mach-src"
-          "$RUNNER_TEMP/bootstrap-mach" dep pull
-          "$RUNNER_TEMP/bootstrap-mach" build . --profile release
-          install -m 0755 out/darwin-x86_64/release/bin/mach "$RUNNER_TEMP/bin/mach"
+          install -m 0755 "$RUNNER_TEMP/mach-release/mach" "$RUNNER_TEMP/bin/mach"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/mach" help | head -1
 
       - name: Build and run vendored static GLFW
         run: |
