@@ -64,7 +64,26 @@ for entry in $candidates; do
     # .tbd is YAML. rather than depend on a yaml module being present, pull every
     # symbol-shaped token out of the file and intersect with what we still need --
     # a token that is not in `remaining` cannot cause a wrong attribution.
-    grep -oE '_[A-Za-z0-9_$.]+' "$tbd" | sort -u > "$work/exports.$name"
+    #
+    # objective-c classes are NOT listed as symbols. they sit in a separate
+    # `objc-classes` array as bare class names, so the linker-visible
+    # `_OBJC_CLASS_$_NSWindow` has to be reconstructed from `NSWindow`. scan only
+    # inside that array -- a bare identifier taken from anywhere in the file
+    # would attribute classes to whichever stub happened to mention the name.
+    {
+        grep -oE '_[A-Za-z0-9_$.]+' "$tbd"
+        awk '
+            /objc-classes/ { inobjc = 1 }
+            inobjc {
+                line = $0
+                gsub(/objc-classes/, "", line)
+                n = split(line, tok, /[^A-Za-z0-9_]+/)
+                for (i = 1; i <= n; i++)
+                    if (tok[i] != "") print "_OBJC_CLASS_$_" tok[i]
+                if (index($0, "]") > 0) inobjc = 0
+            }
+        ' "$tbd"
+    } | sort -u > "$work/exports.$name"
     comm -12 "$work/remaining" "$work/exports.$name" > "$work/claim.$name"
 
     if [ -s "$work/claim.$name" ]; then
