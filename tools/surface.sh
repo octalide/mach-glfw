@@ -5,7 +5,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 
-MODULES="core window monitor input key hint err mouse joystick"
+MODULES="core window monitor input key hint err mouse joystick vulkan"
 
 generate() {
     cat <<'EOF'

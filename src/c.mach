@@ -504,3 +504,21 @@ pub ext fun glfwExtensionSupported(extension: *u8) i32;
 # returns the address of the specified function for the current context
 #[library("glfw")]
 pub ext fun glfwGetProcAddress(procname: *u8) ptr;
+
+# --- Vulkan interop -------------------------------------------------------
+#
+# These are the three entry points a Vulkan renderer needs from GLFW. They are
+# present in the library whether or not it was built with Vulkan support;
+# glfwVulkanSupported reports which.
+
+# returns whether a Vulkan loader and at least one ICD were found
+pub ext fun glfwVulkanSupported() i32;
+
+# returns the instance extensions required to create a surface, and their count
+pub ext fun glfwGetRequiredInstanceExtensions(count: *u32) **u8;
+
+# returns the address of a Vulkan core or instance-level function
+pub ext fun glfwGetInstanceProcAddress(instance: ptr, procname: *u8) ptr;
+
+# creates a Vulkan surface for the window; returns VK_SUCCESS (0) on success
+pub ext fun glfwCreateWindowSurface(instance: ptr, window: ptr, allocator: ptr, surface: *u64) i32;
