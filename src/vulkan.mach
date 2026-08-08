@@ -1,0 +1,63 @@
+# Vulkan interop.
+#
+# GLFW owns the window and therefore the platform surface a Vulkan swapchain
+# presents to. These four calls are the whole boundary between the two: ask
+# whether Vulkan is usable, ask which instance extensions a surface needs,
+# create the surface, and resolve instance-level entry points.
+#
+# The surface is returned as a u64 rather than a typed handle because
+# VkSurfaceKHR is a non-dispatchable handle, which is a 64-bit integer on every
+# platform regardless of pointer width. Typing it here would force a dependency
+# on a Vulkan binding, and this library has none.
+
+use std.types.bool.bool;
+use std.types.string.str;
+use std.types.size.usize;
+use glfw.c;
+use glfw.window.Window;
+
+# VkResult VK_SUCCESS, the value glfwCreateWindowSurface returns on success.
+pub val SUCCESS: i32 = 0;
+
+# Whether a Vulkan loader and at least one ICD are available.
+#
+# False means no surface can be created, so a caller should fall back rather
+# than proceed and fail later with a less obvious error.
+pub fun vulkan_supported() bool {
+    ret c.glfwVulkanSupported() != 0;
+}
+
+# The instance extensions required to create a surface on this platform.
+#
+# The returned array is owned by GLFW and lives until termination, so it must
+# not be freed. Passing these to VkInstanceCreateInfo is mandatory: an instance
+# created without them cannot present.
+# ---
+# count: receives the number of extension names
+# ret:   array of null-terminated names, or nil if Vulkan is unavailable
+pub fun required_instance_extensions(count: *u32) **u8 {
+    ret c.glfwGetRequiredInstanceExtensions(count);
+}
+
+# Create a Vulkan surface for a window.
+#
+# ---
+# instance: the VkInstance to create the surface against
+# window:   the window to present to
+# surface:  receives the VkSurfaceKHR handle
+# ret:      true on VK_SUCCESS
+pub fun create_window_surface(instance: ptr, window: Window, surface: *u64) bool {
+    ret c.glfwCreateWindowSurface(instance, window.handle, nil, surface) == SUCCESS;
+}
+
+# Address of a Vulkan core or instance-level function.
+#
+# Passing a nil instance resolves the small set of functions available before
+# one exists, such as vkCreateInstance.
+# ---
+# instance: the instance to resolve against, or nil
+# procname: function name
+# ret:      function address, or nil
+pub fun get_instance_proc_address(instance: ptr, procname: str) ptr {
+    ret c.glfwGetInstanceProcAddress(instance, procname);
+}
