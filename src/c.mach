@@ -512,13 +512,17 @@ pub ext fun glfwGetProcAddress(procname: *u8) ptr;
 # glfwVulkanSupported reports which.
 
 # returns whether a Vulkan loader and at least one ICD were found
+#[library("glfw")]
 pub ext fun glfwVulkanSupported() i32;
 
 # returns the instance extensions required to create a surface, and their count
+#[library("glfw")]
 pub ext fun glfwGetRequiredInstanceExtensions(count: *u32) **u8;
 
 # returns the address of a Vulkan core or instance-level function
+#[library("glfw")]
 pub ext fun glfwGetInstanceProcAddress(instance: ptr, procname: *u8) ptr;
 
 # creates a Vulkan surface for the window; returns VK_SUCCESS (0) on success
+#[library("glfw")]
 pub ext fun glfwCreateWindowSurface(instance: ptr, window: ptr, allocator: ptr, surface: *u64) i32;
