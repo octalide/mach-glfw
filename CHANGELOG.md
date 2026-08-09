@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-08
+
 ### Added
+- vulkan: `glfw.vulkan` exposes the four GLFW/Vulkan interop entry points — `vulkan_supported`, `required_instance_extensions`, `create_window_surface`, and `get_instance_proc_address`. GLFW owns the window and therefore the platform surface a swapchain presents to, and the bindings previously exposed none of it, so a Vulkan renderer could not create a surface for a GLFW window. The surface is returned as a `u64` because `VkSurfaceKHR` is non-dispatchable and therefore 64-bit on every platform; typing it would force a dependency on a Vulkan binding this library does not have.
 - build: Vendor GLFW 3.4 and build it into target-specific static archives for
   Linux, Windows, and Darwin.
 - ci: Build and run the vendored path on Linux and Darwin, cross-build and
