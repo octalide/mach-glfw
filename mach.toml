@@ -278,7 +278,7 @@ export = true
 [link.libSystem]
 source = "system"
 name = "/usr/lib/libSystem.B.dylib"
-library = "/usr/lib/libSystem.B.dylib"
+library = "libSystem"
 symbols = [
     "__assert_rtn", "__bzero", "__memcpy_chk", "__sprintf_chk",
     "__stack_chk_fail", "__stack_chk_guard", "_NSConcreteGlobalBlock",
@@ -300,7 +300,7 @@ export = true
 [link.objc]
 source = "system"
 name = "/usr/lib/libobjc.A.dylib"
-library = "/usr/lib/libobjc.A.dylib"
+library = "objc"
 symbols = [
     "OBJC_CLASS_$_NSObject", "OBJC_METACLASS_$_NSObject",
     "_objc_empty_cache", "objc_alloc", "objc_alloc_init",
