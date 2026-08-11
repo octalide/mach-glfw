@@ -110,7 +110,7 @@ while read -r name count; do
         
         if (line == "") {
             line = "    " item
-        } else if (length(line) + length(item) > 70) {
+        } else if (length(line) + length(item) > 72) {
             print line
             line = "    " item
         } else {
