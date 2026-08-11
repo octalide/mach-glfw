@@ -105,17 +105,18 @@ while read -r name count; do
     echo "symbols_for_$name = ["
     # strip exactly one leading underscore: `symbols` is source-level and mach
     # re-applies the target's prefix itself
-    sed 's/^_//' "$work/claim.$name" | awk '
-    {
-        token = "\"" $0 "\", "
-        if (length(line) + length(token) > 70 && line != "") {
+    sed 's/^_//' "$work/claim.$name" | awk ' {
+        item = "\"" $0 "\", "
+        
+        if (line == "") {
+            line = "    " item
+        } else if (length(line) + length(item) > 70) {
             print line
-            line = token
+            line = "    " item
         } else {
-            line = line token
+            line = line item
         }
-    }
-    END {
+    } END {
         if (length(line) > 0) {
             sub(/, $/, "", line)
             print line
