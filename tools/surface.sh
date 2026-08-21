@@ -24,8 +24,14 @@ EOF
     for m in $MODULES; do printf 'use glfw.%s;\n' "$m"; done
     printf '\nfwd c.Vidmode;\nfwd c.Gammaramp;\nfwd c.Image;\nfwd c.Gamepadstate;\n'
     for m in $MODULES; do
-        grep -oE '^pub (val|fun|rec|def) [A-Za-z_][A-Za-z0-9_]*' "src/$m.mach" |
-            awk -v m="$m" '{print m"."$3}'
+        grep -oE 'pub (ext )?(val|fun|rec|def) [A-Za-z_][A-Za-z0-9_]*' "src/$m.mach" |
+            awk -v m="$m" '{
+                if ($2 == "ext") {
+                    print m"."$4
+                } else {
+                    print m"."$3
+                }
+            }'
     done | LC_ALL=C sort | awk -F. ' {
         if (!($NF in seen)) {
             seen[$NF] = $0
